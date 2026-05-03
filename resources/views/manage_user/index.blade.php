@@ -47,7 +47,7 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             <button @click="editUser({{ $user }})" class="text-primary-600 hover:text-primary-800 mr-3"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <form action="{{ route('manage_user.destroy', $user->id ?? 0) }}" method="POST" class="inline">
+                            <form action="{{ route('users.destroy', $user->id ?? 0) }}" method="POST" class="inline">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Delete this user?')"><i class="fa-solid fa-trash"></i></button>
                             </form>
@@ -75,7 +75,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100" x-text="editingId ? 'Edit User' : 'Add User'"></h3>
                     <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form :action="editingId ? '{{ route('manage_user.update', '') }}/' + editingId : '{{ route('manage_user.store') }}'" method="POST">
+                <form :action="editingId ? '{{ route('users.update', '') }}/' + editingId : '{{ route('users.store') }}'" method="POST">
                     @csrf
                     <input type="hidden" name="_method" x-bind:value="editingId ? 'PUT' : 'POST'">
                     <div class="space-y-4">

@@ -41,10 +41,10 @@
                             <td class="px-4 py-3 text-right font-semibold text-gray-800 dark:text-gray-200">Rp {{ number_format($draft->final_total, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <a href="{{ route('pos.restore', $draft) }}" class="p-1.5 text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors" title="Lanjutkan">
+                                    <a href="{{ route('pos.store', $draft) }}" class="p-1.5 text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors" title="Lanjutkan">
                                         <i class="fa-solid fa-play"></i>
                                     </a>
-                                    <form action="{{ route('sale.drafts.destroy', $draft) }}" method="POST" onsubmit="return confirm('Hapus transaksi tunda ini?')" class="inline">
+                                    <form action="{{ route('sales.drafts.destroy', $draft) }}" method="POST" onsubmit="return confirm('Hapus transaksi tunda ini?')" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors" title="Hapus">

@@ -16,7 +16,7 @@
 <div class="max-w-2xl mx-auto">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-5">System Settings</h3>
-        <form action="{{ route('settings.system.update') }}" method="POST" class="space-y-5">
+        <form action="{{ route('settings.system') }}" method="POST" class="space-y-5">
             @csrf
             @method('PUT')
 

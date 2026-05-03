@@ -62,7 +62,7 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <button @click="editLayout({{ $layout }})" class="text-primary-600 hover:text-primary-800 mr-3"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <form action="{{ route('settings.invoice.layouts.destroy', $layout->id ?? 0) }}" method="POST" class="inline">
+                                <form action="{{ route('settings.invoice-layouts.destroy', $layout->id ?? 0) }}" method="POST" class="inline">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Delete this layout?')"><i class="fa-solid fa-trash"></i></button>
                                 </form>
@@ -115,7 +115,7 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <button @click="editScheme({{ $scheme }})" class="text-primary-600 hover:text-primary-800 mr-3"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <form action="{{ route('settings.invoice.schemes.destroy', $scheme->id ?? 0) }}" method="POST" class="inline">
+                                <form action="{{ route('settings.invoice-layouts.destroy', $scheme->id ?? 0) }}" method="POST" class="inline">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Delete this scheme?')"><i class="fa-solid fa-trash"></i></button>
                                 </form>
@@ -141,7 +141,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100" x-text="editingLayoutId ? 'Edit Layout' : 'Add Layout'"></h3>
                     <button @click="showLayoutModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form :action="editingLayoutId ? '{{ route('settings.invoice.layouts.update', '') }}/' + editingLayoutId : '{{ route('settings.invoice.layouts.store') }}'" method="POST">
+                <form :action="editingLayoutId ? '{{ route('settings.invoice-layouts.update', '') }}/' + editingLayoutId : '{{ route('settings.invoice-layouts.store') }}'" method="POST">
                     @csrf
                     <input type="hidden" name="_method" x-bind:value="editingLayoutId ? 'PUT' : 'POST'">
                     <div class="space-y-4">
@@ -183,7 +183,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100" x-text="editingSchemeId ? 'Edit Scheme' : 'Add Scheme'"></h3>
                     <button @click="showSchemeModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form :action="editingSchemeId ? '{{ route('settings.invoice.schemes.update', '') }}/' + editingSchemeId : '{{ route('settings.invoice.schemes.store') }}'" method="POST">
+                <form :action="editingSchemeId ? '{{ route('settings.invoice-layouts.update', '') }}/' + editingSchemeId : '{{ route('settings.invoice-layouts.store') }}'" method="POST">
                     @csrf
                     <input type="hidden" name="_method" x-bind:value="editingSchemeId ? 'PUT' : 'POST'">
                     <div class="space-y-4">

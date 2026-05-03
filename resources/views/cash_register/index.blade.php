@@ -36,7 +36,7 @@
     @else
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Open Register</h3>
-        <form action="{{ route('cash_register.open') }}" method="POST" class="space-y-4 max-w-md">
+        <form action="{{ route('cash-register.open') }}" method="POST" class="space-y-4 max-w-md">
             @csrf
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
@@ -86,7 +86,7 @@
                             </span>
                         </td>
                         <td class="px-4 py-3 text-right">
-                            <a href="{{ route('cash_register.show', $reg->id ?? 0) }}" class="text-primary-600 hover:text-primary-800"><i class="fa-solid fa-eye"></i></a>
+                            <a href="{{ route('cash-register.show', $reg->id ?? 0) }}" class="text-primary-600 hover:text-primary-800"><i class="fa-solid fa-eye"></i></a>
                         </td>
                     </tr>
                     @empty
@@ -111,7 +111,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">Close Register</h3>
                     <button @click="showCloseModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form action="{{ route('cash_register.close', $register->id ?? 0) }}" method="POST">
+                <form action="{{ route('cash-register.close', $register->id ?? 0) }}" method="POST">
                     @csrf
                     <div class="space-y-4">
                         <div>
