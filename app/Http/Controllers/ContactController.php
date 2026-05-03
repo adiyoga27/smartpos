@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Contact;
+use App\Models\CustomerGroup;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class ContactController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $query = Contact::where('business_id', auth()->user()->business_id);
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('first_name', 'like', '%'.$request->search.'%')
+                    ->orWhere('mobile', 'like', '%'.$request->search.'%')
+                    ->orWhere('supplier_business_name', 'like', '%'.$request->search.'%');
+            });
+        }
+
+        $contacts = $query->latest()->paginate(20);
+        $customerGroups = CustomerGroup::where('business_id', auth()->user()->business_id)->get();
+
+        return view('contact.index', compact('contacts', 'customerGroups'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'type' => 'required|in:customer,supplier,both',
+            'first_name' => 'nullable|string|max:255',
+            'supplier_business_name' => 'nullable|string|max:255',
+            'mobile' => 'nullable|string|max:20',
+            'email' => 'nullable|email',
+            'address_line_1' => 'nullable|string',
+            'city' => 'nullable|string',
+            'state' => 'nullable|string',
+            'tax_number' => 'nullable|string',
+            'credit_limit' => 'nullable|numeric',
+            'customer_group_id' => 'nullable|exists:customer_groups,id',
+        ]);
+
+        Contact::create(array_merge($data, [
+            'business_id' => auth()->user()->business_id,
+            'created_by' => auth()->id(),
+        ]));
+
+        return back()->with('success', 'Kontak berhasil ditambahkan.');
+    }
+
+    public function update(Request $request, Contact $contact): RedirectResponse
+    {
+        $contact->update($request->validate([
+            'type' => 'required|in:customer,supplier,both',
+            'first_name' => 'nullable|string|max:255',
+            'supplier_business_name' => 'nullable|string|max:255',
+            'mobile' => 'nullable|string',
+            'email' => 'nullable|email',
+            'address_line_1' => 'nullable|string',
+            'city' => 'nullable|string',
+            'tax_number' => 'nullable|string',
+            'credit_limit' => 'nullable|numeric',
+            'customer_group_id' => 'nullable|exists:customer_groups,id',
+        ]));
+
+        return back()->with('success', 'Kontak berhasil diperbarui.');
+    }
+
+    public function destroy(Contact $contact): RedirectResponse
+    {
+        $contact->delete();
+
+        return back()->with('success', 'Kontak berhasil dihapus.');
+    }
+}
