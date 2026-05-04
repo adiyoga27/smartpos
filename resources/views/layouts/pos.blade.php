@@ -38,9 +38,7 @@
                 <span class="text-sm text-gray-500 dark:text-gray-400 hidden sm:inline">@yield('title', 'Kasir POS')</span>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{{ route('sales.index') }}" class="p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">
-                    <i class="fa-solid fa-list mr-1"></i> <span class="hidden sm:inline">Daftar Penjualan</span>
-                </a>
+                @yield('header-controls')
                 <button x-on:click="darkMode = !darkMode" class="p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                     <i class="fa-solid" x-bind:class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
                 </button>

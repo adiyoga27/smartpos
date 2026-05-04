@@ -13,7 +13,6 @@ use App\Models\VariationLocationDetail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -22,24 +21,9 @@ class ProductController extends Controller
     public function index(Request $request): View
     {
         $businessId = auth()->user()->business_id;
-        $locationId = BusinessLocation::where('business_id', $businessId)->first()?->id;
 
         $query = Product::where('business_id', $businessId)
-            ->with(['category', 'brand', 'unit', 'variations'])
-            ->selectSub(
-                DB::table('transaction_items')
-                    ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
-                    ->join('variations', 'transaction_items.variation_id', '=', 'variations.id')
-                    ->whereColumn('variations.product_id', 'products.id')
-                    ->where('transactions.status', 'final')
-                    ->whereIn('transactions.type', ['opening_stock', 'purchase', 'sell', 'stock_adjustment'])
-                    ->selectRaw('COALESCE(SUM(CASE
-                        WHEN transactions.type IN (?, ?) THEN transaction_items.quantity
-                        WHEN transactions.type = ? THEN -transaction_items.quantity
-                        ELSE 0
-                    END), 0)', ['opening_stock', 'purchase', 'sell']),
-                'total_stock'
-            );
+            ->with(['category', 'brand', 'unit', 'variations.locationDetails']);
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {

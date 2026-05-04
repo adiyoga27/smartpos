@@ -57,7 +57,7 @@
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($products ?? [] as $product)
                         @php
-                            $totalStock = $product->total_stock ?? 0;
+                            $totalStock = $product->variations->sum(fn($v) => $v->locationDetails->sum('qty_available'));
                             $defaultVariation = $product->variations->first();
                             $sellPrice = $defaultVariation ? $defaultVariation->default_sell_price : 0;
                         @endphp

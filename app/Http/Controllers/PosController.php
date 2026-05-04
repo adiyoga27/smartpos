@@ -118,6 +118,8 @@ class PosController extends Controller
             'payment_method' => 'required|in:cash,card,bank_transfer,other',
             'payment_amount' => 'required|numeric|min:0',
             'payment_note' => 'nullable|string|max:255',
+            'shipping_details' => 'nullable|string|max:1000',
+            'shipping_charges' => 'nullable|numeric|min:0',
         ]);
 
         $businessId = auth()->user()->business_id;
@@ -177,16 +179,19 @@ class PosController extends Controller
             }
         }
 
-        $finalTotal = $totalBeforeTax + $taxAmount;
+        $shippingCharges = (float) ($request->shipping_charges ?? 0);
+        $finalTotal = $totalBeforeTax + $taxAmount + $shippingCharges;
         $change = max(0, $request->payment_amount - $finalTotal);
 
-        $transaction = DB::transaction(function () use ($request, $businessId, $locationId, $invoiceNo, $discountAmount, $totalBeforeTax, $taxAmount, $finalTotal) {
+        $totalPaid = collect($request->payments ?? [])->sum('amount') ?: (float) $request->payment_amount;
+
+        $transaction = DB::transaction(function () use ($request, $businessId, $locationId, $invoiceNo, $discountAmount, $totalBeforeTax, $taxAmount, $finalTotal, $shippingCharges, $totalPaid) {
             $transaction = Transaction::create([
                 'business_id' => $businessId,
                 'location_id' => $locationId,
                 'type' => 'sell',
                 'status' => 'final',
-                'payment_status' => $request->payment_amount >= $finalTotal ? 'paid' : 'due',
+                'payment_status' => $totalPaid >= $finalTotal ? 'paid' : ($totalPaid > 0 ? 'partial' : 'due'),
                 'contact_id' => $request->contact_id,
                 'invoice_no' => $invoiceNo,
                 'transaction_date' => now(),
@@ -195,6 +200,8 @@ class PosController extends Controller
                 'tax_amount' => $taxAmount,
                 'discount_type' => $request->discount_type,
                 'discount_amount' => $discountAmount,
+                'shipping_details' => $request->shipping_details,
+                'shipping_charges' => $shippingCharges,
                 'final_total' => $finalTotal,
                 'created_by' => auth()->id(),
             ]);
@@ -229,15 +236,25 @@ class PosController extends Controller
                     ->decrement('qty_available', $item['quantity']);
             }
 
-            TransactionPayment::create([
-                'transaction_id' => $transaction->id,
-                'business_id' => $businessId,
-                'amount' => $request->payment_amount,
-                'method' => $request->payment_method,
-                'paid_on' => now(),
-                'created_by' => auth()->id(),
-                'payment_ref_no' => $request->payment_note,
-            ]);
+            $payments = $request->payments ?? [[
+                'method' => $request->payment_method ?? 'cash',
+                'amount' => $request->payment_amount ?? 0,
+                'note' => $request->payment_note ?? null,
+            ]];
+
+            foreach ($payments as $payment) {
+                if (($payment['amount'] ?? 0) > 0) {
+                    TransactionPayment::create([
+                        'transaction_id' => $transaction->id,
+                        'business_id' => $businessId,
+                        'amount' => $payment['amount'] ?? 0,
+                        'method' => $payment['method'] ?? 'cash',
+                        'paid_on' => now(),
+                        'created_by' => auth()->id(),
+                        'payment_ref_no' => $payment['note'] ?? null,
+                    ]);
+                }
+            }
 
             return $transaction;
         });
