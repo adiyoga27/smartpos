@@ -213,7 +213,7 @@
 
 @push('scripts')
 <script>
-    const purchaseTaxRates = @json($taxRates->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'amount' => $t->amount]));
+    const purchaseTaxRates = @json($taxRatesJson);
 
     function purchaseForm() {
         return {

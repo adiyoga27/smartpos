@@ -119,7 +119,7 @@
 
                     <div class="flex items-center gap-3">
                         <input id="unit_decimal" name="allow_decimal" type="checkbox" x-model="form.allow_decimal" value="1"
-                            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                            class="rounded border border-gray-300 text-primary-600 focus:ring-primary-500">
                         <label for="unit_decimal" class="text-sm text-gray-700 dark:text-gray-300">Izinkan nilai desimal</label>
                     </div>
 

@@ -24,6 +24,7 @@
         ['label' => 'Stok', 'icon' => 'fa-boxes-stacked', 'route' => null, 'active' => 'stock*', 'children' => [
             ['label' => 'Stok Adjustment', 'route' => 'stock.adjustments.index', 'permission' => 'stock.view'],
             ['label' => 'Transfer Stok', 'route' => 'stock.transfers.index', 'permission' => 'stock.view'],
+            ['label' => 'Riwayat Stok', 'route' => 'stock.history', 'permission' => 'stock.view'],
         ]],
         ['label' => 'Biaya', 'icon' => 'fa-money-bill', 'route' => null, 'active' => 'expenses*|expense-categories*', 'children' => [
             ['label' => 'Daftar Biaya', 'route' => 'expenses.index', 'permission' => 'expenses.view'],

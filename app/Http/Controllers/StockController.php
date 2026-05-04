@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessLocation;
+use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\VariationLocationDetail;
@@ -17,7 +18,8 @@ class StockController extends Controller
     {
         $query = Transaction::where('business_id', auth()->user()->business_id)
             ->where('type', 'stock_adjustment')
-            ->with(['location', 'items.product'])
+            ->with(['location', 'items.product', 'items.variation'])
+            ->withCount('items')
             ->latest('transaction_date');
 
         if ($request->filled('from_date')) {
@@ -81,11 +83,68 @@ class StockController extends Controller
         return back()->with('success', 'Stok adjustment berhasil disimpan.');
     }
 
+    public function showAdjustment($id): View
+    {
+        $adjustment = Transaction::where('business_id', auth()->user()->business_id)
+            ->where('type', 'stock_adjustment')
+            ->with(['location', 'items.product', 'items.variation', 'creator'])
+            ->findOrFail($id);
+
+        return view('stock.adjustment_show', compact('adjustment'));
+    }
+
+    public function productHistory(Request $request): View
+    {
+        $businessId = auth()->user()->business_id;
+        $productId = $request->get('product_id');
+        $search = $request->get('search');
+
+        $locations = BusinessLocation::where('business_id', $businessId)->get();
+        $history = collect();
+        $selectedProduct = null;
+
+        if ($productId) {
+            $selectedProduct = Product::where('business_id', $businessId)
+                ->with('variations')
+                ->find($productId);
+
+            $variationIds = $selectedProduct?->variations->pluck('id') ?? [];
+
+            $history = TransactionItem::whereIn('variation_id', $variationIds)
+                ->with(['transaction' => fn ($q) => $q->with(['location', 'creator']), 'product', 'variation'])
+                ->whereHas('transaction', fn ($q) => $q->where('business_id', $businessId))
+                ->latest('id')
+                ->paginate(30);
+
+            return view('stock.history', compact(
+                'history', 'selectedProduct', 'productId', 'locations'
+            ));
+        }
+
+        $productQuery = Product::where('business_id', $businessId)
+            ->where('enable_stock', true)
+            ->with(['variations.locationDetails', 'unit'])
+            ->orderBy('name');
+
+        if ($search) {
+            $productQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhereHas('variations', fn ($vq) => $vq->where('sub_sku', 'like', "%{$search}%"));
+            });
+        }
+
+        $products = $productQuery->paginate(25);
+
+        return view('stock.history', compact('products', 'locations', 'search'));
+    }
+
     public function transfers(): View
     {
         $transfers = Transaction::where('business_id', auth()->user()->business_id)
             ->where('type', 'stock_transfer')
             ->with(['location', 'items.product'])
+            ->withCount('items')
             ->latest()
             ->paginate(20);
 

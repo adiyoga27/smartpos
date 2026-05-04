@@ -22,7 +22,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App Version</label>
-                <input type="text" name="app_version" value="{{ old('app_version', $settings->app_version ?? '1.0.0') }}" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <input type="text" name="app_version" value="{{ old('app_version', $settings->app_version ?? '1.0.0') }}" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
             </div>
 
             <div>
@@ -40,7 +40,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default Language</label>
-                <select name="default_language" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <select name="default_language" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                     <option value="en" {{ ($settings->default_language ?? '') === 'en' ? 'selected' : '' }}>English</option>
                     <option value="id" {{ ($settings->default_language ?? '') === 'id' ? 'selected' : '' }}>Bahasa Indonesia</option>
                 </select>
@@ -48,7 +48,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default Currency</label>
-                <select name="currency" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <select name="currency" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                     <option value="IDR" {{ ($settings->currency ?? 'IDR') === 'IDR' ? 'selected' : '' }}>IDR (Indonesian Rupiah)</option>
                     <option value="USD" {{ ($settings->currency ?? '') === 'USD' ? 'selected' : '' }}>USD (US Dollar)</option>
                 </select>
@@ -56,12 +56,12 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Items Per Page</label>
-                <input type="number" name="items_per_page" value="{{ old('items_per_page', $settings->items_per_page ?? 25) }}" min="5" max="100" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <input type="number" name="items_per_page" value="{{ old('items_per_page', $settings->items_per_page ?? 25) }}" min="5" max="100" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Invoice Footer Text</label>
-                <textarea name="invoice_footer" rows="2" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">{{ old('invoice_footer', $settings->invoice_footer ?? '') }}</textarea>
+                <textarea name="invoice_footer" rows="2" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">{{ old('invoice_footer', $settings->invoice_footer ?? '') }}</textarea>
             </div>
 
             <div class="pt-2">

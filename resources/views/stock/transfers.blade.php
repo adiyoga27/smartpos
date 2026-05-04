@@ -71,13 +71,13 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
-                                <input type="date" name="date" x-model="form.date" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                                <input type="date" name="date" x-model="form.date" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                             </div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Location</label>
-                                <select name="from_location_id" x-model="form.from_location_id" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                                <select name="from_location_id" x-model="form.from_location_id" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                                     <option value="">Select Location</option>
                                     @foreach($locations ?? [] as $location)
                                         <option value="{{ $location->id }}">{{ $location->name }}</option>
@@ -86,7 +86,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Location</label>
-                                <select name="to_location_id" x-model="form.to_location_id" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                                <select name="to_location_id" x-model="form.to_location_id" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                                     <option value="">Select Location</option>
                                     @foreach($locations ?? [] as $location)
                                         <option value="{{ $location->id }}">{{ $location->name }}</option>
@@ -96,7 +96,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-                            <textarea name="notes" x-model="form.notes" rows="2" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
+                            <textarea name="notes" x-model="form.notes" rows="2" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
                         </div>
 
                         {{-- Items Section --}}
@@ -104,10 +104,10 @@
                             <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Items</h4>
                             <div class="flex gap-2 mb-3">
                                 <div class="flex-1">
-                                    <input type="text" x-model="itemSearch" @input.debounce.300="searchProducts()" placeholder="Search product..." class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="text" x-model="itemSearch" @input.debounce.300="searchProducts()" placeholder="Search product..." class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div class="w-32">
-                                    <input type="number" x-model="itemQty" placeholder="Qty" min="1" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" x-model="itemQty" placeholder="Qty" min="1" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <button type="button" @click="addItem()" class="px-4 py-2 bg-success-500 text-white text-sm rounded-lg hover:bg-success-600">Add</button>
                             </div>
@@ -135,7 +135,7 @@
                                                 <input type="hidden" :name="'items[' + index + '][product_id]'" :value="item.product_id">
                                             </td>
                                             <td class="px-3 py-2 text-right">
-                                                <input type="number" :name="'items[' + index + '][quantity]'" x-model="item.quantity" min="1" class="w-20 text-right rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1 focus:ring-primary-500 focus:border-primary-500">
+                                                <input type="number" :name="'items[' + index + '][quantity]'" x-model="item.quantity" min="1" class="w-20 text-right rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1 focus:ring-primary-500 focus:border-primary-500">
                                             </td>
                                             <td class="px-3 py-2 text-right">
                                                 <button type="button" @click="items.splice(index, 1)" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-xmark"></i></button>

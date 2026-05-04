@@ -170,20 +170,35 @@ class ProductController extends Controller
     public function search(Request $request): JsonResponse
     {
         $query = $request->get('q', '');
-        $products = Product::where('business_id', auth()->user()->business_id)
-            ->with(['variations', 'tax.subTaxes'])
-            ->where(function ($q) use ($query) {
+        $page = $request->get('page', 1);
+        $perPage = 24;
+
+        $defaultLocationId = BusinessLocation::where('business_id', auth()->user()->business_id)->first()?->id;
+
+        $baseQuery = Product::where('business_id', auth()->user()->business_id)
+            ->with(['variations.locationDetails', 'tax.subTaxes'])
+            ->where('is_inactive', false)
+            ->where('not_for_selling', false);
+
+        if ($query !== '') {
+            $baseQuery->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                     ->orWhere('sku', 'like', "%{$query}%")
                     ->orWhereHas('variations', function ($vq) use ($query) {
                         $vq->where('sub_sku', 'like', "%{$query}%");
                     });
-            })
-            ->limit(20)
-            ->get();
+            });
+            $products = $baseQuery->latest()->limit(20)->get();
+        } else {
+            $products = $baseQuery
+                ->orderByRaw("(SELECT COALESCE(SUM(vld.qty_available), 0) FROM variation_location_details vld JOIN variations v ON v.id = vld.variation_id WHERE v.product_id = products.id AND vld.location_id = {$defaultLocationId}) > 0 DESC")
+                ->orderBy('products.name')
+                ->paginate($perPage, ['*'], 'page', $page);
+        }
 
-        return response()->json($products->map(function ($p) {
+        $mapped = $products->map(function ($p) use ($defaultLocationId) {
             $v = $p->variations->first();
+            $stockDetail = $v?->locationDetails?->where('location_id', $defaultLocationId)->first();
 
             return [
                 'id' => $p->id,
@@ -205,8 +220,20 @@ class ProductController extends Controller
                     'name' => $t->name,
                     'amount' => $t->amount,
                 ]),
+                'enable_stock' => $p->enable_stock,
+                'qty_available' => (float) ($stockDetail?->qty_available ?? 0),
             ];
-        }));
+        });
+
+        if ($query !== '') {
+            return response()->json($mapped);
+        }
+
+        return response()->json([
+            'data' => $mapped,
+            'current_page' => $products->currentPage(),
+            'last_page' => $products->lastPage(),
+        ]);
     }
 
     private function calculateTaxAmount(float $sellPrice, ?int $taxId, string $taxType): float

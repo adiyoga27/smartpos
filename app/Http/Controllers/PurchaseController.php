@@ -44,7 +44,13 @@ class PurchaseController extends Controller
         $locations = BusinessLocation::where('business_id', auth()->user()->business_id)->get();
         $taxRates = TaxRate::where('business_id', auth()->user()->business_id)->get();
 
-        return view('purchase.create', compact('suppliers', 'locations', 'taxRates'));
+        $taxRatesJson = $taxRates->map(fn ($t) => [
+            'id' => $t->id,
+            'name' => $t->name,
+            'amount' => $t->amount,
+        ]);
+
+        return view('purchase.create', compact('suppliers', 'locations', 'taxRates', 'taxRatesJson'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -144,5 +150,38 @@ class PurchaseController extends Controller
         $purchase->load(['items.product', 'items.variation', 'contact', 'payments', 'location']);
 
         return view('purchase.show', compact('purchase'));
+    }
+
+    public function addPayment(Request $request, Transaction $purchase): RedirectResponse
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'method' => 'required|in:cash,bank_transfer,other',
+        ]);
+
+        $totalPaid = $purchase->payments()->sum('amount');
+        $maxAmount = max(0, $purchase->final_total - $totalPaid);
+
+        if ($request->amount > $maxAmount) {
+            return back()->withErrors(['amount' => 'Jumlah pembayaran melebihi sisa tagihan (Rp '.number_format($maxAmount, 0, ',', '.').').']);
+        }
+
+        TransactionPayment::create([
+            'transaction_id' => $purchase->id,
+            'business_id' => auth()->user()->business_id,
+            'amount' => $request->amount,
+            'method' => $request->method,
+            'paid_on' => now(),
+            'created_by' => auth()->id(),
+        ]);
+
+        $newTotalPaid = $totalPaid + $request->amount;
+        if ($newTotalPaid >= $purchase->final_total) {
+            $purchase->update(['payment_status' => 'paid']);
+        } else {
+            $purchase->update(['payment_status' => 'partial']);
+        }
+
+        return redirect()->route('purchases.show', $purchase)->with('success', 'Pembayaran berhasil dicatat.');
     }
 }

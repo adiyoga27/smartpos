@@ -147,11 +147,11 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-                            <input type="text" name="name" x-model="layoutForm.name" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                            <input type="text" name="name" x-model="layoutForm.name" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Design</label>
-                            <select name="design" x-model="layoutForm.design" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                            <select name="design" x-model="layoutForm.design" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                                 <option value="default">Default</option>
                                 <option value="modern">Modern</option>
                                 <option value="classic">Classic</option>
@@ -160,7 +160,7 @@
                         </div>
                         <div>
                             <label class="flex items-center gap-2">
-                                <input type="checkbox" name="is_default" x-model="layoutForm.is_default" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
+                                <input type="checkbox" name="is_default" x-model="layoutForm.is_default" class="rounded border border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Set as Default</span>
                             </label>
                         </div>
@@ -189,19 +189,19 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-                            <input type="text" name="name" x-model="schemeForm.name" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                            <input type="text" name="name" x-model="schemeForm.name" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Prefix</label>
-                            <input type="text" name="prefix" x-model="schemeForm.prefix" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                            <input type="text" name="prefix" x-model="schemeForm.prefix" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Number</label>
-                            <input type="number" name="start_number" x-model="schemeForm.start_number" min="1" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                            <input type="number" name="start_number" x-model="schemeForm.start_number" min="1" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                         </div>
                         <div>
                             <label class="flex items-center gap-2">
-                                <input type="checkbox" name="is_default" x-model="schemeForm.is_default" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
+                                <input type="checkbox" name="is_default" x-model="schemeForm.is_default" class="rounded border border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Set as Default</span>
                             </label>
                         </div>

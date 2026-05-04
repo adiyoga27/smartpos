@@ -11,23 +11,73 @@ use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionPayment;
 use App\Models\VariationLocationDetail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class PosController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $locations = BusinessLocation::where('business_id', auth()->user()->business_id)->get();
         $customers = Contact::where('business_id', auth()->user()->business_id)->customers()->orderBy('first_name')->get();
         $taxRates = TaxRate::where('business_id', auth()->user()->business_id)->with('subTaxes')->get();
 
-        return view('sale_pos.create', compact('locations', 'customers', 'taxRates'));
+        $taxRatesJson = $taxRates->map(fn ($t) => [
+            'id' => $t->id,
+            'name' => $t->name,
+            'amount' => $t->amount,
+            'is_tax_group' => $t->is_tax_group,
+            'sub_taxes' => $t->subTaxes->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'amount' => $s->amount,
+            ])->values(),
+        ]);
+
+        $defaultLocation = BusinessLocation::where('business_id', auth()->user()->business_id)->first();
+        $defaultLocationId = $defaultLocation?->id;
+
+        $page = $request->get('page', 1);
+        $products = Product::where('business_id', auth()->user()->business_id)
+            ->where('is_inactive', false)
+            ->where('not_for_selling', false)
+            ->with(['variations.locationDetails', 'tax.subTaxes'])
+            ->orderByRaw("(SELECT COALESCE(SUM(vld.qty_available), 0) FROM variation_location_details vld JOIN variations v ON v.id = vld.variation_id WHERE v.product_id = products.id AND vld.location_id = {$defaultLocationId}) > 0 DESC")
+            ->orderBy('name')
+            ->paginate(24, ['*'], 'page', $page);
+
+        $productsJson = $products->map(function ($p) use ($defaultLocationId) {
+            $v = $p->variations->first();
+            $stockDetail = $v?->locationDetails?->where('location_id', $defaultLocationId)->first();
+
+            return [
+                'id' => $p->id,
+                'name' => $p->name,
+                'sku' => $p->sku,
+                'barcode' => $v?->sub_sku,
+                'image' => $p->image ? Storage::url($p->image) : null,
+                'variation_id' => $v?->id,
+                'sell_price' => $v?->default_sell_price,
+                'sell_price_inc_tax' => $v?->sell_price_inc_tax,
+                'purchase_price' => $v?->default_purchase_price,
+                'tax_type' => $p->tax_type,
+                'tax_id' => $p->tax_id,
+                'enable_stock' => $p->enable_stock,
+                'qty_available' => (float) ($stockDetail?->qty_available ?? 0),
+            ];
+        });
+
+        return view('sale_pos.create', compact(
+            'locations', 'customers', 'taxRates', 'taxRatesJson',
+            'products', 'productsJson',
+        ));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $request->validate([
             'contact_id' => 'nullable|exists:contacts,id',
@@ -42,10 +92,41 @@ class PosController extends Controller
             'tax_id' => 'nullable|exists:tax_rates,id',
             'payment_method' => 'required|in:cash,card,bank_transfer,other',
             'payment_amount' => 'required|numeric|min:0',
+            'payment_note' => 'nullable|string|max:255',
         ]);
 
         $businessId = auth()->user()->business_id;
         $locationId = $request->location_id ?? BusinessLocation::where('business_id', $businessId)->first()?->id;
+
+        $stockErrors = [];
+        foreach ($request->items as $item) {
+            $product = Product::with('variations')->find($item['product_id']);
+            if (! $product || ! $product->enable_stock) {
+                continue;
+            }
+
+            $qtyAvailable = VariationLocationDetail::where('variation_id', $item['variation_id'])
+                ->where('location_id', $locationId)
+                ->value('qty_available') ?? 0;
+
+            if ((float) $item['quantity'] > (float) $qtyAvailable) {
+                $stockErrors[] = "Stok '{$product->name}' tidak mencukupi. Tersedia: {$qtyAvailable}, diminta: {$item['quantity']}.";
+            }
+        }
+
+        if (! empty($stockErrors)) {
+            $errorMessage = implode(' ', $stockErrors);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'stock_errors' => $stockErrors,
+                ], 422);
+            }
+
+            return back()->withErrors(['items' => $errorMessage])->withInput();
+        }
 
         $invoiceNo = $this->generateInvoiceNo($businessId);
 
@@ -118,7 +199,6 @@ class PosController extends Controller
                     'item_type' => 'sell',
                 ]);
 
-                // Reduce stock
                 VariationLocationDetail::where('variation_id', $item['variation_id'])
                     ->where('location_id', $locationId)
                     ->decrement('qty_available', $item['quantity']);
@@ -131,12 +211,85 @@ class PosController extends Controller
                 'method' => $request->payment_method,
                 'paid_on' => now(),
                 'created_by' => auth()->id(),
+                'payment_ref_no' => $request->payment_note,
             ]);
 
             return $transaction;
         });
 
-        return redirect()->route('sales.show', $transaction)->with('success', "Penjualan {$invoiceNo} berhasil. Kembalian: Rp ".number_format($change, 0, ',', '.'));
+        $transaction->load(['items.product', 'items.variation', 'contact', 'payments', 'location', 'tax']);
+
+        $message = "Penjualan {$invoiceNo} berhasil. Kembalian: Rp ".number_format($change, 0, ',', '.');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'change' => $change,
+                'change_formatted' => 'Rp '.number_format($change, 0, ',', '.'),
+                'transaction' => $this->formatTransactionForJson($transaction),
+            ]);
+        }
+
+        return redirect()->route('sales.show', $transaction)->with('success', $message);
+    }
+
+    private function formatTransactionForJson(Transaction $transaction): array
+    {
+        return [
+            'id' => $transaction->id,
+            'invoice_no' => $transaction->invoice_no,
+            'transaction_date' => $transaction->transaction_date->format('d/m/Y H:i'),
+            'status' => $transaction->status,
+            'payment_status' => $transaction->payment_status,
+            'discount_type' => $transaction->discount_type,
+            'discount_amount' => (float) $transaction->discount_amount,
+            'tax_amount' => (float) $transaction->tax_amount,
+            'total_before_tax' => (float) $transaction->total_before_tax,
+            'final_total' => (float) $transaction->final_total,
+            'location' => $transaction->location?->only(['id', 'name', 'landmark', 'city', 'state', 'country', 'zip_code', 'mobile']),
+            'contact' => $transaction->contact?->only(['id', 'first_name', 'full_name', 'mobile']),
+            'items' => $transaction->items->map(fn ($item) => [
+                'product_name' => $item->product?->name,
+                'variation_name' => $item->variation?->name,
+                'quantity' => (float) $item->quantity,
+                'unit_price' => (float) $item->unit_price,
+                'unit_price_inc_tax' => (float) $item->unit_price_inc_tax,
+                'line_total' => (float) ($item->quantity * $item->unit_price),
+            ])->values(),
+            'payments' => $transaction->payments->map(fn ($p) => [
+                'method' => $p->method,
+                'amount' => (float) $p->amount,
+                'paid_on' => $p->paid_on->format('d/m/Y H:i'),
+                'method_label' => match ($p->method) {
+                    'cash' => 'Tunai',
+                    'card' => 'Kartu',
+                    'bank_transfer' => 'Transfer Bank',
+                    default => 'Lainnya',
+                },
+            ])->values(),
+            'tax' => $transaction->tax?->only(['id', 'name', 'amount']),
+        ];
+    }
+
+    public function printThermal(Transaction $transaction): View
+    {
+        $transaction->load(['items.product', 'items.variation', 'contact', 'payments', 'location', 'creator']);
+
+        return view('sale_pos.print_thermal', [
+            'transaction' => $transaction,
+            'location' => $transaction->location ?? BusinessLocation::where('business_id', auth()->user()->business_id)->first(),
+        ]);
+    }
+
+    public function printA4(Transaction $transaction): View
+    {
+        $transaction->load(['items.product', 'items.variation', 'contact', 'payments', 'location', 'creator']);
+
+        return view('sale_pos.print_a4', [
+            'transaction' => $transaction,
+            'location' => $transaction->location ?? BusinessLocation::where('business_id', auth()->user()->business_id)->first(),
+        ]);
     }
 
     private function generateInvoiceNo(int $businessId): string

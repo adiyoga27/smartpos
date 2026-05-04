@@ -22,17 +22,17 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Business Name</label>
-                <input type="text" name="name" value="{{ old('name', $settings->name ?? '') }}" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <input type="text" name="name" value="{{ old('name', $settings->name ?? '') }}" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tax Number</label>
-                <input type="text" name="tax_number_1" value="{{ old('tax_number_1', $settings->tax_number_1 ?? '') }}" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <input type="text" name="tax_number_1" value="{{ old('tax_number_1', $settings->tax_number_1 ?? '') }}" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Zone</label>
-                <select name="time_zone" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <select name="time_zone" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                     <option value="">Select timezone</option>
                     <option value="Asia/Jakarta" {{ ($settings->time_zone ?? '') === 'Asia/Jakarta' ? 'selected' : '' }}>Asia/Jakarta (WIB)</option>
                     <option value="Asia/Makassar" {{ ($settings->time_zone ?? '') === 'Asia/Makassar' ? 'selected' : '' }}>Asia/Makassar (WITA)</option>
@@ -44,7 +44,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Format</label>
-                <select name="date_format" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <select name="date_format" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                     <option value="d-m-Y" {{ ($settings->date_format ?? '') === 'd-m-Y' ? 'selected' : '' }}>{{ date('d-m-Y') }} (dd-mm-yyyy)</option>
                     <option value="m-d-Y" {{ ($settings->date_format ?? '') === 'm-d-Y' ? 'selected' : '' }}>{{ date('m-d-Y') }} (mm-dd-yyyy)</option>
                     <option value="Y-m-d" {{ ($settings->date_format ?? '') === 'Y-m-d' ? 'selected' : '' }}>{{ date('Y-m-d') }} (yyyy-mm-dd)</option>
@@ -82,7 +82,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Theme Color</label>
-                <select name="theme_color" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <select name="theme_color" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                     <option value="blue" {{ ($settings->theme_color ?? '') === 'blue' ? 'selected' : '' }}>Blue (Default)</option>
                     <option value="green" {{ ($settings->theme_color ?? '') === 'green' ? 'selected' : '' }}>Green</option>
                     <option value="purple" {{ ($settings->theme_color ?? '') === 'purple' ? 'selected' : '' }}>Purple</option>

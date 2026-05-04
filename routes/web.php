@@ -59,12 +59,15 @@ Route::middleware('auth')->group(function () {
 
     // Contacts
     Route::middleware('permission:contacts.view')->resource('contacts', ContactController::class)->except(['create', 'show', 'edit']);
+    Route::get('/api/customers/search', [ContactController::class, 'search'])->name('customers.search');
     Route::middleware('permission:customer-groups.view')->resource('customer-groups', CustomerGroupController::class)->except(['create', 'show', 'edit']);
 
     // POS & Sales
     Route::middleware('permission:pos.view')->group(function () {
         Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
         Route::post('/pos', [PosController::class, 'store'])->name('pos.store');
+        Route::get('/pos/{transaction}/print/thermal', [PosController::class, 'printThermal'])->name('pos.print.thermal');
+        Route::get('/pos/{transaction}/print/a4', [PosController::class, 'printA4'])->name('pos.print.a4');
     });
     Route::middleware('permission:sales.view')->group(function () {
         Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
@@ -76,15 +79,17 @@ Route::middleware('auth')->group(function () {
 
     // Purchases
     Route::middleware('permission:purchases.view')->resource('purchases', PurchaseController::class);
+    Route::post('/purchases/{purchase}/payment', [PurchaseController::class, 'addPayment'])->name('purchases.payment.store');
 
     // Stock
     Route::middleware('permission:stock.view')->group(function () {
         Route::get('/stock/adjustments', [StockController::class, 'adjustments'])->name('stock.adjustments.index');
         Route::post('/stock/adjustments', [StockController::class, 'storeAdjustment'])->name('stock.adjustments.store');
-        Route::get('/stock/adjustments/{id}', [StockController::class, 'adjustments'])->name('stock.adjustments.show');
+        Route::get('/stock/adjustments/{id}', [StockController::class, 'showAdjustment'])->name('stock.adjustments.show');
         Route::get('/stock/transfers', [StockController::class, 'transfers'])->name('stock.transfers.index');
         Route::post('/stock/transfers', [StockController::class, 'storeTransfer'])->name('stock.transfers.store');
         Route::get('/stock/transfers/{id}', [StockController::class, 'transfers'])->name('stock.transfers.show');
+        Route::get('/stock/history', [StockController::class, 'productHistory'])->name('stock.history');
     });
 
     // Expenses

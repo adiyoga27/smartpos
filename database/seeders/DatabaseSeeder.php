@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             BusinessSeeder::class,
             PermissionTableSeeder::class,
             MasterDataSeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }

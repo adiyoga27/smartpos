@@ -88,14 +88,26 @@ class ReportController extends Controller
         $grossProfit = $totalSales - $totalPurchases;
         $netProfit = $grossProfit - $totalExpenses;
 
-        $dailyData = Transaction::where('business_id', auth()->user()->business_id)
+        $rawDaily = Transaction::where('business_id', auth()->user()->business_id)
             ->whereIn('type', ['sell', 'purchase', 'expense'])
             ->whereBetween('transaction_date', [$fromDate, $toDate.' 23:59:59'])
-            ->selectRaw('DATE(transaction_date) as date, type, SUM(final_total) as total')
+            ->selectRaw("DATE_FORMAT(transaction_date, '%Y-%m-%d') as date, type, SUM(final_total) as total")
             ->groupBy('date', 'type')
             ->orderBy('date')
             ->get()
             ->groupBy('date');
+
+        $dailyData = $rawDaily->map(function ($rows, $date) {
+            return [
+                'date' => $date,
+                'sales' => (float) $rows->where('type', 'sell')->sum('total'),
+                'purchases' => (float) $rows->where('type', 'purchase')->sum('total'),
+                'expenses' => (float) $rows->where('type', 'expense')->sum('total'),
+                'profit' => (float) ($rows->where('type', 'sell')->sum('total')
+                    - $rows->where('type', 'purchase')->sum('total')
+                    - $rows->where('type', 'expense')->sum('total')),
+            ];
+        })->values();
 
         return view('report.profit_loss', compact(
             'totalSales', 'totalPurchases', 'totalExpenses',

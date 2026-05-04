@@ -40,7 +40,7 @@
             @csrf
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
-                <select name="location_id" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <select name="location_id" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                     <option value="">Select Location</option>
                     @foreach($locations ?? [] as $location)
                         <option value="{{ $location->id }}">{{ $location->name }}</option>
@@ -49,7 +49,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Opening Amount (IDR)</label>
-                <input type="number" name="opening_amount" step="0.01" min="0" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                <input type="number" name="opening_amount" step="0.01" min="0" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
             </div>
             <button type="submit" class="px-6 py-2 bg-success-600 text-white text-sm font-medium rounded-lg hover:bg-success-700">
                 <i class="fa-solid fa-door-open mr-2"></i> Open Register
@@ -116,7 +116,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Closing Amount (IDR)</label>
-                            <input type="number" name="closing_amount" x-model="closeForm.closing_amount" step="0.01" min="0" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                            <input type="number" name="closing_amount" x-model="closeForm.closing_amount" step="0.01" min="0" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                         </div>
 
                         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -124,39 +124,39 @@
                             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">100,000</label>
-                                    <input type="number" name="denom_100000" x-model.number="closeForm.denom_100000" min="0" @input="calcTotal()" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" name="denom_100000" x-model.number="closeForm.denom_100000" min="0" @input="calcTotal()" class="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">50,000</label>
-                                    <input type="number" name="denom_50000" x-model.number="closeForm.denom_50000" min="0" @input="calcTotal()" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" name="denom_50000" x-model.number="closeForm.denom_50000" min="0" @input="calcTotal()" class="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">20,000</label>
-                                    <input type="number" name="denom_20000" x-model.number="closeForm.denom_20000" min="0" @input="calcTotal()" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" name="denom_20000" x-model.number="closeForm.denom_20000" min="0" @input="calcTotal()" class="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">10,000</label>
-                                    <input type="number" name="denom_10000" x-model.number="closeForm.denom_10000" min="0" @input="calcTotal()" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" name="denom_10000" x-model.number="closeForm.denom_10000" min="0" @input="calcTotal()" class="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">5,000</label>
-                                    <input type="number" name="denom_5000" x-model.number="closeForm.denom_5000" min="0" @input="calcTotal()" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" name="denom_5000" x-model.number="closeForm.denom_5000" min="0" @input="calcTotal()" class="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">2,000</label>
-                                    <input type="number" name="denom_2000" x-model.number="closeForm.denom_2000" min="0" @input="calcTotal()" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" name="denom_2000" x-model.number="closeForm.denom_2000" min="0" @input="calcTotal()" class="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">1,000</label>
-                                    <input type="number" name="denom_1000" x-model.number="closeForm.denom_1000" min="0" @input="calcTotal()" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" name="denom_1000" x-model.number="closeForm.denom_1000" min="0" @input="calcTotal()" class="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">500</label>
-                                    <input type="number" name="denom_500" x-model.number="closeForm.denom_500" min="0" @input="calcTotal()" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" name="denom_500" x-model.number="closeForm.denom_500" min="0" @input="calcTotal()" class="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">100</label>
-                                    <input type="number" name="denom_100" x-model.number="closeForm.denom_100" min="0" @input="calcTotal()" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                                    <input type="number" name="denom_100" x-model.number="closeForm.denom_100" min="0" @input="calcTotal()" class="w-full rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-2 py-1.5 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                             </div>
                             <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 text-right">
@@ -167,7 +167,7 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Closing Note</label>
-                            <textarea name="closing_note" rows="2" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
+                            <textarea name="closing_note" rows="2" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
                         </div>
                     </div>
                     <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">

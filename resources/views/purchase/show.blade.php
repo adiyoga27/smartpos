@@ -125,12 +125,31 @@
                 <span class="text-gray-800 dark:text-gray-100">Grand Total</span>
                 <span class="text-primary-600 dark:text-primary-400">Rp {{ number_format($purchase->final_total, 0, ',', '.') }}</span>
             </div>
+
+            @php
+                $totalPaidAmount = $purchase->payments->sum('amount');
+                $sisa = max(0, $purchase->final_total - $totalPaidAmount);
+            @endphp
+
+            @if($totalPaidAmount > 0)
+                <div class="flex justify-between text-sm pt-1">
+                    <span class="text-gray-600 dark:text-gray-400">Total Dibayar</span>
+                    <span class="font-medium text-success-600">Rp {{ number_format($totalPaidAmount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+
+            @if($sisa > 0)
+                <div class="flex justify-between text-sm font-bold pt-1">
+                    <span class="text-gray-600 dark:text-gray-400">Sisa</span>
+                    <span class="text-danger-600">Rp {{ number_format($sisa, 0, ',', '.') }}</span>
+                </div>
+            @endif
         </div>
     </div>
 
     {{-- Payment Info --}}
     @if($purchase->payments->isNotEmpty())
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-4">
             <div class="px-6 py-3 border-b border-gray-200 dark:border-gray-700">
                 <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Informasi Pembayaran</h3>
             </div>
@@ -160,8 +179,61 @@
                             </tr>
                         @endforeach
                     </tbody>
+                    <tfoot class="bg-gray-50 dark:bg-gray-700/50 font-medium text-gray-700 dark:text-gray-300 text-sm">
+                        <tr>
+                            <td class="px-4 py-2">Total Dibayar</td>
+                            <td class="px-4 py-2 text-right font-bold text-success-600">Rp {{ number_format($totalPaidAmount, 0, ',', '.') }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
+        </div>
+    @endif
+
+    {{-- Add Payment Form (only if not fully paid) --}}
+    @if($sisa > 0)
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-4">
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">Tambah Pembayaran</h3>
+
+            @if($errors->any())
+                <div class="mb-4 p-3 bg-danger-50 border border-red-200 rounded-lg text-sm text-red-600">
+                    @foreach($errors->all() as $err)
+                        <p>{{ $err }}</p>
+                    @endforeach
+                </div>
+            @endif
+
+            <div class="mb-4 flex justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-400">Sisa Tagihan</span>
+                <span class="font-bold text-lg text-danger-600">Rp {{ number_format($sisa, 0, ',', '.') }}</span>
+            </div>
+
+            <form method="POST" action="{{ route('purchases.payment.store', $purchase) }}">
+                @csrf
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Pembayaran <span class="text-red-500">*</span></label>
+                        <input type="number" name="amount" value="{{ old('amount', $sisa) }}" step="0.01" min="0.01" max="{{ $sisa }}" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Metode Pembayaran <span class="text-red-500">*</span></label>
+                        <select name="method" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>Tunai</option>
+                            <option value="bank_transfer" {{ old('method') == 'bank_transfer' ? 'selected' : '' }}>Transfer Bank</option>
+                            <option value="other" {{ old('method') == 'other' ? 'selected' : '' }}>Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button type="submit" class="px-4 py-2 bg-success-600 hover:bg-success-700 text-white text-sm font-medium rounded-lg transition-colors">
+                        <i class="fa-solid fa-check mr-2"></i> Catat Pembayaran
+                    </button>
+                    <button type="submit" name="lunas" value="1" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
+                        <i class="fa-solid fa-check-double mr-2"></i> Langsung Lunas
+                    </button>
+                </div>
+            </form>
         </div>
     @endif
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use App\Models\CustomerGroup;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -31,7 +32,7 @@ class ContactController extends Controller
         return view('contact.index', compact('contacts', 'customerGroups'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $data = $request->validate([
             'type' => 'required|in:customer,supplier,both',
@@ -39,6 +40,7 @@ class ContactController extends Controller
             'supplier_business_name' => 'nullable|string|max:255',
             'mobile' => 'nullable|string|max:20',
             'email' => 'nullable|email',
+            'contact_id' => 'nullable|string|max:50',
             'address_line_1' => 'nullable|string',
             'city' => 'nullable|string',
             'state' => 'nullable|string',
@@ -47,12 +49,48 @@ class ContactController extends Controller
             'customer_group_id' => 'nullable|exists:customer_groups,id',
         ]);
 
-        Contact::create(array_merge($data, [
+        $contact = Contact::create(array_merge($data, [
             'business_id' => auth()->user()->business_id,
             'created_by' => auth()->id(),
         ]));
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pelanggan berhasil ditambahkan.',
+                'contact' => [
+                    'id' => $contact->id,
+                    'full_name' => $contact->full_name,
+                    'contact_id' => $contact->contact_id,
+                ],
+            ]);
+        }
+
         return back()->with('success', 'Kontak berhasil ditambahkan.');
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $query = $request->get('q', '');
+
+        $contacts = Contact::where('business_id', auth()->user()->business_id)
+            ->customers()
+            ->where(function ($q) use ($query) {
+                $q->where('first_name', 'like', "%{$query}%")
+                    ->orWhere('mobile', 'like', "%{$query}%")
+                    ->orWhere('contact_id', 'like', "%{$query}%");
+            })
+            ->orderBy('first_name')
+            ->limit(15)
+            ->get()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'full_name' => $c->full_name,
+                'mobile' => $c->mobile,
+                'contact_id' => $c->contact_id,
+            ]);
+
+        return response()->json($contacts);
     }
 
     public function update(Request $request, Contact $contact): RedirectResponse

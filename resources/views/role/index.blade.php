@@ -64,7 +64,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role Name</label>
-                            <input type="text" name="name" x-model="form.name" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                            <input type="text" name="name" x-model="form.name" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                         </div>
 
                         <div>
@@ -72,13 +72,13 @@
                             <template x-for="mod in permissionModules" :key="mod.name">
                                 <div class="mb-3 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                                     <div class="flex items-center mb-2">
-                                        <input type="checkbox" :id="'select-all-' + mod.name" @change="toggleModule(mod, $event.target.checked)" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
+                                        <input type="checkbox" :id="'select-all-' + mod.name" @change="toggleModule(mod, $event.target.checked)" class="rounded border border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
                                         <label :for="'select-all-' + mod.name" class="ml-2 text-sm font-semibold text-gray-700 dark:text-gray-300 capitalize" x-text="mod.name"></label>
                                     </div>
                                     <div class="grid grid-cols-2 gap-1.5 ml-6">
                                         <template x-for="perm in mod.permissions" :key="perm">
                                             <label class="flex items-center gap-1.5">
-                                                <input type="checkbox" name="permissions[]" :value="perm" :checked="selectedPermissions.includes(perm)" @change="togglePerm(perm)" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
+                                                <input type="checkbox" name="permissions[]" :value="perm" :checked="selectedPermissions.includes(perm)" @change="togglePerm(perm)" class="rounded border border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
                                                 <span class="text-xs text-gray-600 dark:text-gray-400" x-text="perm.split('.').pop().replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())"></span>
                                             </label>
                                         </template>
