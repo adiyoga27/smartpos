@@ -54,7 +54,6 @@ Route::middleware('auth')->group(function () {
 
     // Products
     Route::middleware('permission:products.view')->resource('products', ProductController::class);
-    Route::get('/api/products/search', [ProductController::class, 'search'])->name('products.search');
     Route::get('/api/products/search', [ProductController::class, 'search'])->name('product.search');
 
     // Contacts

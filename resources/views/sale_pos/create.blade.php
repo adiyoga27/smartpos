@@ -3,9 +3,9 @@
 @section('title', 'Kasir POS')
 
 @section('content')
-<div x-data="posCart()" class="flex flex-col lg:flex-row gap-0 h-full" x-cloak>
+<div x-data="posCart()" class="flex flex-col lg:flex-row h-full" x-cloak>
     {{-- Left Panel: Product Search & Grid --}}
-    <div class="w-full lg:w-3/5 flex flex-col border-r border-gray-200 dark:border-gray-700">
+    <div class="w-full lg:flex-1 flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 min-h-0 lg:h-full">
         <div class="bg-white dark:bg-gray-800 p-4 flex flex-col flex-1 overflow-hidden">
             <div class="mb-4 flex-shrink-0">
                 <div class="relative">
@@ -95,9 +95,9 @@
     </div>
 
     {{-- Right Panel: Cart / Invoice Preview --}}
-    <div class="w-full lg:w-2/5 flex flex-col bg-white dark:bg-gray-800">
+    <div class="w-full lg:w-[42%] lg:min-w-[380px] lg:max-w-[500px] flex flex-col bg-white dark:bg-gray-800 border-t lg:border-t-0 border-gray-200 dark:border-gray-700 min-h-0 lg:h-full overflow-hidden">
         {{-- Cart View --}}
-        <div x-show="!showInvoice" class="flex flex-col h-full p-4">
+        <div x-show="!showInvoice" class="flex flex-col flex-1 overflow-hidden p-4">
             {{-- Location Selector --}}
             <div class="flex-shrink-0 mb-4">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -452,7 +452,7 @@
     const printThermalUrl = '{{ route('pos.print.thermal', ['transaction' => '__ID__']) }}';
     const printA4Url = '{{ route('pos.print.a4', ['transaction' => '__ID__']) }}';
     const setLocationUrl = '{{ route('pos.set-location') }}';
-    const posSearchUrl = '{{ route('products.search') }}';
+    const posSearchUrl = '{{ route('product.search') }}';
     const initialLocationId = {{ $selectedLocationId ?? 0 }};
 
     function posCart() {
