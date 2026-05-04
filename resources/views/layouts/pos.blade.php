@@ -27,8 +27,8 @@
     </script>
     @stack('styles')
 </head>
-<body class="h-full bg-gray-50 dark:bg-gray-900" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" x-init="$watch('darkMode', val => { localStorage.setItem('darkMode', val); if(val) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }); if(darkMode) document.documentElement.classList.add('dark')">
-    <div class="flex flex-col h-full">
+<body class="bg-gray-50 dark:bg-gray-900 min-h-full" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" x-init="$watch('darkMode', val => { localStorage.setItem('darkMode', val); if(val) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }); if(darkMode) document.documentElement.classList.add('dark')">
+    <div class="flex flex-col min-h-full lg:h-screen">
         <header class="flex-shrink-0 flex items-center justify-between h-14 px-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center gap-3">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2 text-lg font-bold text-primary-600 dark:text-primary-400">
@@ -71,7 +71,7 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-hidden">
+        <main class="flex-1 lg:overflow-hidden">
             @if(session('success'))
                 <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="m-4 p-4 bg-success-50 border border-green-200 text-green-700 rounded-lg flex items-center justify-between">
                     <span><i class="fa-solid fa-circle-check mr-2"></i> {{ session('success') }}</span>

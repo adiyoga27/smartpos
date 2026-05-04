@@ -3,10 +3,10 @@
 @section('title', 'Kasir POS')
 
 @section('content')
-<div x-data="posCart()" class="flex flex-col lg:flex-row h-full" x-cloak>
+<div x-data="posCart()" class="flex flex-col lg:flex-row lg:h-full" x-cloak>
     {{-- Left Panel: Product Search & Grid --}}
-    <div class="w-full lg:flex-1 flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 min-h-0 lg:h-full">
-        <div class="bg-white dark:bg-gray-800 p-4 flex flex-col flex-1 overflow-hidden">
+    <div class="w-full lg:flex-1 flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 lg:h-full">
+        <div class="bg-white dark:bg-gray-800 p-4 flex flex-col flex-1 overflow-hidden max-h-[55vh] lg:max-h-none">
             <div class="mb-4 flex-shrink-0">
                 <div class="relative">
                     <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -95,9 +95,9 @@
     </div>
 
     {{-- Right Panel: Cart / Invoice Preview --}}
-    <div class="w-full lg:w-[42%] lg:min-w-[380px] lg:max-w-[500px] flex flex-col bg-white dark:bg-gray-800 border-t lg:border-t-0 border-gray-200 dark:border-gray-700 min-h-0 lg:h-full overflow-hidden">
+    <div class="w-full lg:w-[42%] lg:min-w-[380px] lg:max-w-[500px] flex flex-col bg-white dark:bg-gray-800 border-t lg:border-t-0 border-gray-200 dark:border-gray-700 lg:h-full overflow-hidden">
         {{-- Cart View --}}
-        <div x-show="!showInvoice" class="flex flex-col flex-1 overflow-hidden p-4">
+        <div x-show="!showInvoice" class="flex flex-col flex-1 overflow-hidden p-4 lg:overflow-y-auto">
             {{-- Location Selector --}}
             <div class="flex-shrink-0 mb-4">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

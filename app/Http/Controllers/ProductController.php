@@ -26,22 +26,20 @@ class ProductController extends Controller
 
         $query = Product::where('business_id', $businessId)
             ->with(['category', 'brand', 'unit', 'variations'])
-            ->withSum(['variations as total_stock' => function ($q) {
-                $q->select(DB::raw('COALESCE(SUM(
-                    (SELECT COALESCE(SUM(
-                        CASE
-                            WHEN t.type IN (\'opening_stock\', \'purchase\') THEN ti.quantity
-                            WHEN t.type = \'sell\' THEN -ti.quantity
-                            WHEN t.type = \'stock_adjustment\' THEN ti.quantity
-                            ELSE 0
-                        END
-                    ), 0)
-                    FROM transaction_items ti
-                    JOIN transactions t ON t.id = ti.transaction_id
-                    WHERE ti.variation_id = variations.id
-                    AND t.status = \'final\'
-                ), 0), 0)'));
-            }]);
+            ->selectSub(
+                DB::table('transaction_items')
+                    ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+                    ->join('variations', 'transaction_items.variation_id', '=', 'variations.id')
+                    ->whereColumn('variations.product_id', 'products.id')
+                    ->where('transactions.status', 'final')
+                    ->whereIn('transactions.type', ['opening_stock', 'purchase', 'sell', 'stock_adjustment'])
+                    ->selectRaw('COALESCE(SUM(CASE
+                        WHEN transactions.type IN (?, ?) THEN transaction_items.quantity
+                        WHEN transactions.type = ? THEN -transaction_items.quantity
+                        ELSE 0
+                    END), 0)', ['opening_stock', 'purchase', 'sell']),
+                'total_stock'
+            );
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
