@@ -30,21 +30,46 @@
 
         {{-- Stock per Location --}}
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
-            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Stok Saat Ini</h3>
-            <div class="flex flex-wrap gap-3">
-                @foreach($locations as $loc)
-                    @php
-                        $locStock = \App\Models\VariationLocationDetail::whereIn('variation_id', $selectedProduct->variations->pluck('id'))
-                            ->where('location_id', $loc->id)
-                            ->sum('qty_available');
-                    @endphp
-                    <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-center min-w-[80px]">
-                        <div class="text-xs text-gray-500">{{ $loc->name }}</div>
-                        <div class="text-lg font-bold {{ $locStock > 0 ? 'text-green-600' : 'text-red-600' }}">
-                            {{ number_format($locStock, 2) }}
-                        </div>
-                    </div>
-                @endforeach
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Stok Saat Ini per Lokasi</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-500 uppercase">
+                        <tr>
+                            <th class="px-3 py-2 text-left">Lokasi</th>
+                            <th class="px-3 py-2 text-right">Stok Awal</th>
+                            <th class="px-3 py-2 text-right">Masuk</th>
+                            <th class="px-3 py-2 text-right">Keluar</th>
+                            <th class="px-3 py-2 text-right">Sisa</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @php $vids = $selectedProduct->variations->pluck('id'); @endphp
+                        @foreach($locations as $loc)
+                            @php
+                                $opening = \App\Models\TransactionItem::whereIn('variation_id', $vids)
+                                    ->whereHas('transaction', fn($q) => $q->where('location_id', $loc->id)->where('type', 'opening_stock'))
+                                    ->sum('quantity');
+                                $incoming = \App\Models\TransactionItem::whereIn('variation_id', $vids)
+                                    ->whereHas('transaction', fn($q) => $q->where('location_id', $loc->id)->whereIn('type', ['purchase', 'stock_transfer']))
+                                    ->sum('quantity');
+                                $outgoing = \App\Models\TransactionItem::whereIn('variation_id', $vids)
+                                    ->whereHas('transaction', fn($q) => $q->where('location_id', $loc->id)->whereIn('type', ['sell']))
+                                    ->sum('quantity');
+                                $adjustment = \App\Models\TransactionItem::whereIn('variation_id', $vids)
+                                    ->whereHas('transaction', fn($q) => $q->where('location_id', $loc->id)->where('type', 'stock_adjustment'))
+                                    ->sum('quantity');
+                                $sisa = \App\Models\VariationLocationDetail::whereIn('variation_id', $vids)->where('location_id', $loc->id)->sum('qty_available');
+                            @endphp
+                            <tr>
+                                <td class="px-3 py-2 font-medium text-gray-700 dark:text-gray-200">{{ $loc->name }}</td>
+                                <td class="px-3 py-2 text-right text-blue-600">{{ $opening > 0 ? number_format($opening, 0) : '-' }}</td>
+                                <td class="px-3 py-2 text-right text-green-600">{{ $incoming + $adjustment > 0 ? number_format($incoming + $adjustment, 0) : '-' }}</td>
+                                <td class="px-3 py-2 text-right text-red-600">{{ $outgoing > 0 ? number_format($outgoing, 0) : '-' }}</td>
+                                <td class="px-3 py-2 text-right font-bold {{ $sisa > 0 ? 'text-green-600' : ($sisa < 0 ? 'text-red-600' : 'text-gray-500') }}">{{ number_format($sisa, 0) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -146,12 +171,19 @@
                 <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">
                     <i class="fa-solid fa-search mr-1"></i> Cari
                 </button>
-                @if($search ?? false)
+                 @if($search ?? false)
                     <a href="{{ route('stock.history') }}" class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                         Reset
                     </a>
                 @endif
             </form>
+
+            {{-- Legend lokasi --}}
+            <div class="mt-3 flex flex-wrap gap-2 text-xs text-gray-500">
+                @foreach($locations as $loc)
+                <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ $loc->name }}</span>
+                @endforeach
+            </div>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -159,11 +191,12 @@
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                         <tr>
-                            <th class="px-4 py-3 text-left font-medium w-12"></th>
                             <th class="px-4 py-3 text-left font-medium">Produk</th>
                             <th class="px-4 py-3 text-left font-medium">SKU</th>
-                            <th class="px-4 py-3 text-left font-medium">Satuan</th>
-                            <th class="px-4 py-3 text-right font-medium">Total Stok</th>
+                            @foreach($locations as $loc)
+                            <th class="px-3 py-3 text-right font-medium text-xs">{{ $loc->name }}</th>
+                            @endforeach
+                            <th class="px-4 py-3 text-right font-medium">Total</th>
                             <th class="px-4 py-3 text-center font-medium w-20">Aksi</th>
                         </tr>
                     </thead>
@@ -173,22 +206,20 @@
                                 $totalStock = $product->variations->flatMap->locationDetails->sum('qty_available');
                             @endphp
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-750">
-                                <td class="px-4 py-3">
-                                    @if($product->image)
-                                        <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-10 h-10 rounded object-cover bg-gray-100 dark:bg-gray-600">
-                                    @else
-                                        <div class="w-10 h-10 rounded bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-gray-400">
-                                            <i class="fa-solid fa-box text-xs"></i>
-                                        </div>
-                                    @endif
-                                </td>
                                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">{{ $product->name }}</td>
                                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">{{ $product->sku ?? '-' }}</td>
-                                <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ $product->unit?->short_name ?? '-' }}</td>
-                                <td class="px-4 py-3 text-right">
-                                    <span class="font-semibold {{ $totalStock > 0 ? 'text-green-600' : 'text-red-600' }}">
-                                        {{ number_format($totalStock, 2) }}
-                                    </span>
+                                @foreach($locations as $loc)
+                                    @php
+                                        $locStock = \App\Models\VariationLocationDetail::whereIn('variation_id', $product->variations->pluck('id'))
+                                            ->where('location_id', $loc->id)
+                                            ->sum('qty_available');
+                                    @endphp
+                                    <td class="px-3 py-3 text-right {{ $locStock > 0 ? 'text-green-600 font-medium' : 'text-gray-400' }}">
+                                        {{ number_format($locStock, 0) }}
+                                    </td>
+                                @endforeach
+                                <td class="px-4 py-3 text-right font-semibold {{ $totalStock > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ number_format($totalStock, 0) }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <a href="{{ route('stock.history', ['product_id' => $product->id]) }}" class="inline-flex items-center px-3 py-1.5 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700">
@@ -198,7 +229,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                                <td colspan="{{ 3 + count($locations) }}" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                                     <i class="fa-solid fa-boxes-stacked text-3xl text-gray-300 mb-2 block"></i>
                                     Produk tidak ditemukan.
                                 </td>
