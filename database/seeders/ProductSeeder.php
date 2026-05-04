@@ -121,7 +121,7 @@ class ProductSeeder extends Seeder
                 ]);
             }
 
-            $productLocations = array_filter(array_map('trim', explode(',', $data['locations'])));
+            $productLocations = array_filter(array_map('trim', explode(',', $data['locations'] ?? '')));
             if (empty($productLocations)) {
                 $productLocations = [$defaultLocation->name];
             }
