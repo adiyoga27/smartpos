@@ -57,9 +57,15 @@
                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $adj->transaction_date->format('d/m/Y H:i') }}</td>
                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $adj->location?->name ?? '-' }}</td>
                         <td class="px-4 py-3">
+                            @if($adj->type === 'opening_stock')
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                Stok Awal
+                            </span>
+                            @else
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $adj->adjustment_type === 'abnormal' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' }}">
                                 {{ $adj->adjustment_type === 'abnormal' ? 'Abnormal' : 'Normal' }}
                             </span>
+                            @endif
                         </td>
                         <td class="px-4 py-3 text-gray-500 dark:text-gray-400 max-w-[200px] truncate">{{ $adj->additional_notes ?? '-' }}</td>
                         <td class="px-4 py-3 text-center text-gray-700 dark:text-gray-300">{{ $adj->items_count }}</td>

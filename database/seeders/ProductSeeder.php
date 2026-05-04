@@ -7,10 +7,13 @@ use App\Models\BusinessLocation;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\TaxRate;
+use App\Models\Transaction;
+use App\Models\TransactionItem;
 use App\Models\Unit;
 use App\Models\Variation;
 use App\Models\VariationLocationDetail;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ProductSeeder extends Seeder
 {
@@ -119,6 +122,38 @@ class ProductSeeder extends Seeder
                     'default_sell_price' => $data['sell_price'],
                     'sell_price_inc_tax' => $data['sell_price'],
                 ]);
+            }
+
+            $hasOpeningStock = Transaction::where('business_id', $business->id)
+                ->where('type', 'opening_stock')
+                ->where('opening_stock_product_id', $product->id)
+                ->exists();
+
+            if ($data['stock'] > 0 && ! $hasOpeningStock) {
+                DB::transaction(function () use ($business, $user, $product, $variation, $data) {
+                    $transaction = Transaction::create([
+                        'business_id' => $business->id,
+                        'type' => 'opening_stock',
+                        'status' => 'final',
+                        'transaction_date' => now(),
+                        'opening_stock_product_id' => $product->id,
+                        'final_total' => $data['purchase_price'] * $data['stock'],
+                        'additional_notes' => 'Stok awal dari ProductSeeder',
+                        'created_by' => $user->id,
+                    ]);
+
+                    TransactionItem::create([
+                        'transaction_id' => $transaction->id,
+                        'product_id' => $product->id,
+                        'variation_id' => $variation->id,
+                        'quantity' => $data['stock'],
+                        'unit_price' => $data['purchase_price'],
+                        'unit_price_inc_tax' => $data['purchase_price'],
+                        'purchase_price' => $data['purchase_price'],
+                        'purchase_price_inc_tax' => $data['purchase_price'],
+                        'item_type' => 'opening_stock',
+                    ]);
+                });
             }
 
             $productLocations = array_filter(array_map('trim', explode(',', $data['locations'] ?? '')));

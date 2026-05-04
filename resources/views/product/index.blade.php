@@ -57,9 +57,7 @@
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($products ?? [] as $product)
                         @php
-                            $totalStock = $product->variations->sum(function($variation) {
-                                return $variation->locationDetails->sum('qty_available');
-                            });
+                            $totalStock = $product->total_stock ?? 0;
                             $defaultVariation = $product->variations->first();
                             $sellPrice = $defaultVariation ? $defaultVariation->default_sell_price : 0;
                         @endphp
@@ -87,7 +85,9 @@
                                     <span class="text-gray-400 text-xs">--</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-right font-semibold text-gray-700 dark:text-gray-200">{{ number_format($sellPrice, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right font-semibold text-gray-700 dark:text-gray-200">
+                                Rp {{ number_format($sellPrice, 0, ',', '.') }}
+                            </td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <a href="{{ route('products.edit', $product->id) }}" class="p-1.5 text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors" title="Edit">

@@ -98,6 +98,17 @@
     <div class="w-full lg:w-2/5 flex flex-col bg-white dark:bg-gray-800">
         {{-- Cart View --}}
         <div x-show="!showInvoice" class="flex flex-col h-full p-4">
+            {{-- Location Selector --}}
+            <div class="flex-shrink-0 mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <i class="fa-solid fa-location-dot mr-1 text-primary-500"></i> Lokasi
+                </label>
+                <select x-model="selectedLocationId" @change="changeLocation()" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none">
+                    @foreach($locations as $loc)
+                    <option value="{{ $loc->id }}">{{ $loc->name }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div x-show="checkoutError" class="flex-shrink-0 mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-lg flex items-start gap-2">
                 <i class="fa-solid fa-circle-exclamation mt-0.5 flex-shrink-0"></i>
                 <span x-text="checkoutError" class="flex-1"></span>
@@ -440,6 +451,9 @@
     const initialNextPage = {{ $products->currentPage() + 1 }};
     const printThermalUrl = '{{ route('pos.print.thermal', ['transaction' => '__ID__']) }}';
     const printA4Url = '{{ route('pos.print.a4', ['transaction' => '__ID__']) }}';
+    const setLocationUrl = '{{ route('pos.set-location') }}';
+    const posSearchUrl = '{{ route('products.search') }}';
+    const initialLocationId = {{ $selectedLocationId ?? 0 }};
 
     function posCart() {
         return {
@@ -451,6 +465,7 @@
             hasMorePages: initialHasMore,
             loadingMore: false,
             cart: [],
+            selectedLocationId: initialLocationId,
             contactId: '',
             customerSearch: '',
             customerResults: [],
@@ -508,6 +523,35 @@
                 return this.subtotal - this.discountValue + this.taxAmount;
             },
 
+            async changeLocation() {
+                try {
+                    const resp = await fetch(setLocationUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                        body: JSON.stringify({ location_id: this.selectedLocationId }),
+                    });
+                    if (resp.ok) {
+                        this.cart = [];
+                        this.checkoutError = '';
+                        this.loadProducts();
+                    }
+                } catch (e) {
+                    console.error('Location change error:', e);
+                }
+            },
+
+            async loadProducts() {
+                try {
+                    const resp = await fetch(posSearchUrl + '?q=&location_id=' + this.selectedLocationId + '&page=1');
+                    const data = await resp.json();
+                    this.defaultProducts = data.data ?? data ?? [];
+                    this.currentPage = 2;
+                    this.hasMorePages = (data.current_page || 0) < (data.last_page || 1);
+                } catch (e) {
+                    console.error('Load products error:', e);
+                }
+            },
+
             async searchProducts() {
                 if (!this.searchQuery || this.searchQuery.length < 2) {
                     this.searchResults = [];
@@ -515,7 +559,7 @@
                 }
                 this.searching = true;
                 try {
-                    const response = await fetch('/api/products/search?q=' + encodeURIComponent(this.searchQuery) + '&page=1');
+                    const response = await fetch('/api/products/search?q=' + encodeURIComponent(this.searchQuery) + '&page=1&location_id=' + this.selectedLocationId);
                     const data = await response.json();
                     this.searchResults = data.data ?? data ?? [];
                 } catch (e) {
@@ -590,6 +634,7 @@
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 const body = new URLSearchParams();
                 body.append('contact_id', this.contactId || '');
+                body.append('location_id', this.selectedLocationId || '');
                 body.append('discount_type', this.discountType);
                 body.append('discount_amount', this.discountAmount || 0);
                 body.append('tax_id', this.selectedTaxId || '');

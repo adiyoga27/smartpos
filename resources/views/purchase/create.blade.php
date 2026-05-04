@@ -76,6 +76,9 @@
                     <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="text" x-model="productSearch" x-on:keyup.debounce.300ms="searchProducts()" x-on:keydown.enter.prevent="handleScanOrSearch()" placeholder="Ketik minimal 2 huruf untuk mencari produk..." class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
+                <button type="button" x-on:click="showQuickAdd = true" class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-2 bg-success-500 hover:bg-success-600 text-white text-sm font-medium rounded-lg transition-colors">
+                    <i class="fa-solid fa-plus-circle"></i> <span class="hidden sm:inline">Produk Baru</span>
+                </button>
             </div>
 
             {{-- Search Results Dropdown --}}
@@ -208,12 +211,80 @@
             </button>
         </div>
     </form>
+
+    {{-- Quick Add Product Modal --}}
+    <div x-show="showQuickAdd" class="fixed inset-0 z-50 overflow-y-auto" x-transition x-cloak>
+        <div class="flex items-end sm:items-center justify-center min-h-screen px-4 pt-20 pb-4 sm:pb-6">
+            <div class="fixed inset-0 bg-gray-900/50" x-on:click="showQuickAdd = false"></div>
+            <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
+                        <i class="fa-solid fa-boxes-stacked mr-2 text-success-500"></i> Tambah Produk Baru
+                    </h3>
+                    <button type="button" x-on:click="showQuickAdd = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+
+                <div x-show="newProductSaved" class="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm rounded-lg flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Produk berhasil ditambahkan dan dimasukkan ke daftar pembelian!</span>
+                </div>
+
+                <form x-on:submit.prevent="saveQuickProduct" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Produk <span class="text-danger-500">*</span></label>
+                            <input type="text" x-model="newProduct.name" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">SKU</label>
+                            <input type="text" x-model="newProduct.sku" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Satuan</label>
+                            <select x-model="newProduct.unit_id" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500">
+                                <option value="">-- Pilih --</option>
+                                @foreach($units ?? [] as $unit)
+                                <option value="{{ $unit->id }}">{{ $unit->short_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Harga Beli <span class="text-danger-500">*</span></label>
+                            <input type="number" x-model.number="newProduct.purchase_price" required min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Harga Jual</label>
+                            <input type="number" x-model.number="newProduct.sell_price" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
+                            <select x-model="newProduct.category_id" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500">
+                                <option value="">-- Pilih --</option>
+                                @foreach($categories ?? [] as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" x-on:click="showQuickAdd = false" class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Batal</button>
+                        <button type="submit" x-bind:disabled="quickAddSaving" class="px-5 py-2 bg-success-500 hover:bg-success-600 disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors">
+                            <i class="fa-solid fa-floppy-disk mr-1"></i>
+                            <span x-text="quickAddSaving ? 'Menyimpan...' : 'Simpan & Tambah'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
     const purchaseTaxRates = @json($taxRatesJson);
+    const quickAddUrl = '{{ route('purchases.quick-add') }}';
 
     function purchaseForm() {
         return {
@@ -225,6 +296,10 @@
             selectedTaxId: '',
             paymentMethod: 'cash',
             paymentAmount: 0,
+            showQuickAdd: false,
+            quickAddSaving: false,
+            newProductSaved: false,
+            newProduct: { name: '', sku: '', unit_id: '', purchase_price: 0, sell_price: 0, category_id: '' },
 
             get subtotal() {
                 return this.items.reduce((sum, item) => sum + (item.qty * item.purchase_price), 0);
@@ -318,6 +393,43 @@
 
             formatNumber(num) {
                 return new Intl.NumberFormat('id-ID').format(parseFloat(num) || 0);
+            },
+
+            async saveQuickProduct() {
+                if (!this.newProduct.name || !this.newProduct.purchase_price) return;
+
+                this.quickAddSaving = true;
+                this.newProductSaved = false;
+
+                try {
+                    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    const resp = await fetch(quickAddUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: JSON.stringify(this.newProduct),
+                    });
+
+                    const data = await resp.json();
+                    if (data.success) {
+                        this.newProductSaved = true;
+                        this.items.push({
+                            product_id: data.product.id,
+                            variation_id: data.product.variation_id,
+                            name: data.product.name,
+                            purchase_price: parseFloat(data.product.purchase_price || 0),
+                            qty: 1,
+                        });
+
+                        setTimeout(() => {
+                            this.newProductSaved = false;
+                            this.showQuickAdd = false;
+                            this.newProduct = { name: '', sku: '', unit_id: '', purchase_price: 0, sell_price: 0, category_id: '' };
+                        }, 1200);
+                    }
+                } catch (e) {
+                    console.error('Quick add error:', e);
+                }
+                this.quickAddSaving = false;
             },
         };
     }

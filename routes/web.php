@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:pos.view')->group(function () {
         Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
         Route::post('/pos', [PosController::class, 'store'])->name('pos.store');
+        Route::post('/pos/set-location', [PosController::class, 'setLocation'])->name('pos.set-location');
         Route::get('/pos/{transaction}/print/thermal', [PosController::class, 'printThermal'])->name('pos.print.thermal');
         Route::get('/pos/{transaction}/print/a4', [PosController::class, 'printA4'])->name('pos.print.a4');
     });
@@ -80,6 +81,7 @@ Route::middleware('auth')->group(function () {
     // Purchases
     Route::middleware('permission:purchases.view')->resource('purchases', PurchaseController::class);
     Route::post('/purchases/{purchase}/payment', [PurchaseController::class, 'addPayment'])->name('purchases.payment.store');
+    Route::post('/purchases/quick-add-product', [PurchaseController::class, 'quickAddProduct'])->name('purchases.quick-add');
 
     // Stock
     Route::middleware('permission:stock.view')->group(function () {

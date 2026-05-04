@@ -13,6 +13,7 @@ use App\Models\VariationLocationDetail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -20,8 +21,27 @@ class ProductController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Product::where('business_id', auth()->user()->business_id)
-            ->with(['category', 'brand', 'unit', 'variations']);
+        $businessId = auth()->user()->business_id;
+        $locationId = BusinessLocation::where('business_id', $businessId)->first()?->id;
+
+        $query = Product::where('business_id', $businessId)
+            ->with(['category', 'brand', 'unit', 'variations'])
+            ->withSum(['variations as total_stock' => function ($q) {
+                $q->select(DB::raw('COALESCE(SUM(
+                    (SELECT COALESCE(SUM(
+                        CASE
+                            WHEN t.type IN (\'opening_stock\', \'purchase\') THEN ti.quantity
+                            WHEN t.type = \'sell\' THEN -ti.quantity
+                            WHEN t.type = \'stock_adjustment\' THEN ti.quantity
+                            ELSE 0
+                        END
+                    ), 0)
+                    FROM transaction_items ti
+                    JOIN transactions t ON t.id = ti.transaction_id
+                    WHERE ti.variation_id = variations.id
+                    AND t.status = \'final\'
+                ), 0), 0)'));
+            }]);
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
@@ -38,7 +58,7 @@ class ProductController extends Controller
         }
 
         $products = $query->latest()->paginate(20);
-        $categories = Category::where('business_id', auth()->user()->business_id)->orderBy('name')->get();
+        $categories = Category::where('business_id', $businessId)->orderBy('name')->get();
 
         return view('product.index', compact('products', 'categories'));
     }
@@ -119,8 +139,9 @@ class ProductController extends Controller
         $units = Unit::where('business_id', auth()->user()->business_id)->orderBy('actual_name')->get();
         $taxRates = TaxRate::where('business_id', auth()->user()->business_id)->with('subTaxes')->orderBy('name')->get();
         $product->load('variations', 'tax.subTaxes');
+        $defaultVariation = $product->variations->first();
 
-        return view('product.edit', compact('product', 'categories', 'brands', 'units', 'taxRates'));
+        return view('product.edit', compact('product', 'defaultVariation', 'categories', 'brands', 'units', 'taxRates'));
     }
 
     public function update(Request $request, Product $product): RedirectResponse
@@ -141,6 +162,9 @@ class ProductController extends Controller
             'product_description' => 'nullable|string',
             'is_inactive' => 'boolean',
             'not_for_selling' => 'boolean',
+            'purchase_price' => 'nullable|numeric|min:0',
+            'sell_price' => 'nullable|numeric|min:0',
+            'profit_percent' => 'nullable|numeric|min:0',
         ]);
 
         if ($request->hasFile('image')) {
@@ -154,6 +178,17 @@ class ProductController extends Controller
 
         if ($request->filled('barcode')) {
             $product->variations()->first()?->update(['sub_sku' => $request->barcode]);
+        }
+
+        $variation = $product->variations()->first();
+        if ($variation) {
+            $variation->update([
+                'default_purchase_price' => $data['purchase_price'] ?? $variation->default_purchase_price,
+                'dpp_inc_tax' => $data['purchase_price'] ?? $variation->dpp_inc_tax,
+                'profit_percent' => $data['profit_percent'] ?? $variation->profit_percent,
+                'default_sell_price' => $data['sell_price'] ?? $variation->default_sell_price,
+                'sell_price_inc_tax' => $data['sell_price'] ?? $variation->sell_price_inc_tax,
+            ]);
         }
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui.');
@@ -173,7 +208,8 @@ class ProductController extends Controller
         $page = $request->get('page', 1);
         $perPage = 24;
 
-        $defaultLocationId = BusinessLocation::where('business_id', auth()->user()->business_id)->first()?->id;
+        $locationId = $request->get('location_id')
+            ?? BusinessLocation::where('business_id', auth()->user()->business_id)->first()?->id;
 
         $baseQuery = Product::where('business_id', auth()->user()->business_id)
             ->with(['variations.locationDetails', 'tax.subTaxes'])
@@ -191,14 +227,14 @@ class ProductController extends Controller
             $products = $baseQuery->latest()->limit(20)->get();
         } else {
             $products = $baseQuery
-                ->orderByRaw("(SELECT COALESCE(SUM(vld.qty_available), 0) FROM variation_location_details vld JOIN variations v ON v.id = vld.variation_id WHERE v.product_id = products.id AND vld.location_id = {$defaultLocationId}) > 0 DESC")
+                ->orderByRaw("(SELECT COALESCE(SUM(vld.qty_available), 0) FROM variation_location_details vld JOIN variations v ON v.id = vld.variation_id WHERE v.product_id = products.id AND vld.location_id = {$locationId}) > 0 DESC")
                 ->orderBy('products.name')
                 ->paginate($perPage, ['*'], 'page', $page);
         }
 
-        $mapped = $products->map(function ($p) use ($defaultLocationId) {
+        $mapped = $products->map(function ($p) use ($locationId) {
             $v = $p->variations->first();
-            $stockDetail = $v?->locationDetails?->where('location_id', $defaultLocationId)->first();
+            $stockDetail = $v?->locationDetails?->where('location_id', $locationId)->first();
 
             return [
                 'id' => $p->id,

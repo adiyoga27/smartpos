@@ -22,9 +22,19 @@ class PosController extends Controller
 {
     public function index(Request $request): View
     {
-        $locations = BusinessLocation::where('business_id', auth()->user()->business_id)->get();
-        $customers = Contact::where('business_id', auth()->user()->business_id)->customers()->orderBy('first_name')->get();
-        $taxRates = TaxRate::where('business_id', auth()->user()->business_id)->with('subTaxes')->get();
+        $businessId = auth()->user()->business_id;
+        $locations = BusinessLocation::where('business_id', $businessId)->get();
+
+        $defaultLocation = BusinessLocation::where('business_id', $businessId)->first();
+        $selectedLocationId = session('pos_location_id', $defaultLocation?->id);
+
+        if (! $locations->pluck('id')->contains($selectedLocationId)) {
+            $selectedLocationId = $defaultLocation?->id;
+            session(['pos_location_id' => $selectedLocationId]);
+        }
+
+        $customers = Contact::where('business_id', $businessId)->customers()->orderBy('first_name')->get();
+        $taxRates = TaxRate::where('business_id', $businessId)->with('subTaxes')->get();
 
         $taxRatesJson = $taxRates->map(fn ($t) => [
             'id' => $t->id,
@@ -38,21 +48,18 @@ class PosController extends Controller
             ])->values(),
         ]);
 
-        $defaultLocation = BusinessLocation::where('business_id', auth()->user()->business_id)->first();
-        $defaultLocationId = $defaultLocation?->id;
-
         $page = $request->get('page', 1);
-        $products = Product::where('business_id', auth()->user()->business_id)
+        $products = Product::where('business_id', $businessId)
             ->where('is_inactive', false)
             ->where('not_for_selling', false)
             ->with(['variations.locationDetails', 'tax.subTaxes'])
-            ->orderByRaw("(SELECT COALESCE(SUM(vld.qty_available), 0) FROM variation_location_details vld JOIN variations v ON v.id = vld.variation_id WHERE v.product_id = products.id AND vld.location_id = {$defaultLocationId}) > 0 DESC")
+            ->orderByRaw("(SELECT COALESCE(SUM(vld.qty_available), 0) FROM variation_location_details vld JOIN variations v ON v.id = vld.variation_id WHERE v.product_id = products.id AND vld.location_id = {$selectedLocationId}) > 0 DESC")
             ->orderBy('name')
             ->paginate(24, ['*'], 'page', $page);
 
-        $productsJson = $products->map(function ($p) use ($defaultLocationId) {
+        $productsJson = $products->map(function ($p) use ($selectedLocationId) {
             $v = $p->variations->first();
-            $stockDetail = $v?->locationDetails?->where('location_id', $defaultLocationId)->first();
+            $stockDetail = $v?->locationDetails?->where('location_id', $selectedLocationId)->first();
 
             return [
                 'id' => $p->id,
@@ -72,9 +79,27 @@ class PosController extends Controller
         });
 
         return view('sale_pos.create', compact(
-            'locations', 'customers', 'taxRates', 'taxRatesJson',
+            'locations', 'selectedLocationId', 'customers', 'taxRates', 'taxRatesJson',
             'products', 'productsJson',
         ));
+    }
+
+    public function setLocation(Request $request): JsonResponse
+    {
+        $locationId = $request->location_id;
+        $location = BusinessLocation::where('business_id', auth()->user()->business_id)
+            ->find($locationId);
+
+        if (! $location) {
+            return response()->json(['success' => false, 'message' => 'Lokasi tidak ditemukan'], 404);
+        }
+
+        session(['pos_location_id' => $location->id]);
+
+        return response()->json([
+            'success' => true,
+            'location' => ['id' => $location->id, 'name' => $location->name],
+        ]);
     }
 
     public function store(Request $request): RedirectResponse|JsonResponse

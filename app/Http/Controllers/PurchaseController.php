@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessLocation;
+use App\Models\Category;
 use App\Models\Contact;
+use App\Models\Product;
 use App\Models\TaxRate;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionPayment;
+use App\Models\Unit;
+use App\Models\Variation;
 use App\Models\VariationLocationDetail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +48,8 @@ class PurchaseController extends Controller
         $suppliers = Contact::where('business_id', auth()->user()->business_id)->suppliers()->orderBy('supplier_business_name')->get();
         $locations = BusinessLocation::where('business_id', auth()->user()->business_id)->get();
         $taxRates = TaxRate::where('business_id', auth()->user()->business_id)->get();
+        $categories = Category::where('business_id', auth()->user()->business_id)->orderBy('name')->get();
+        $units = Unit::where('business_id', auth()->user()->business_id)->orderBy('actual_name')->get();
 
         $taxRatesJson = $taxRates->map(fn ($t) => [
             'id' => $t->id,
@@ -50,7 +57,55 @@ class PurchaseController extends Controller
             'amount' => $t->amount,
         ]);
 
-        return view('purchase.create', compact('suppliers', 'locations', 'taxRates', 'taxRatesJson'));
+        return view('purchase.create', compact('suppliers', 'locations', 'taxRates', 'taxRatesJson', 'categories', 'units'));
+    }
+
+    public function quickAddProduct(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'sku' => 'nullable|string',
+            'unit_id' => 'nullable|exists:units,id',
+            'purchase_price' => 'required|numeric|min:0',
+            'sell_price' => 'nullable|numeric|min:0',
+            'category_id' => 'nullable|exists:categories,id',
+        ]);
+
+        $businessId = auth()->user()->business_id;
+
+        $product = Product::create([
+            'name' => $data['name'],
+            'sku' => $data['sku'] ?: null,
+            'business_id' => $businessId,
+            'type' => 'single',
+            'unit_id' => $data['unit_id'] ?? null,
+            'category_id' => $data['category_id'] ?? null,
+            'tax_type' => 'exclusive',
+            'enable_stock' => true,
+            'created_by' => auth()->id(),
+        ]);
+
+        $variation = Variation::create([
+            'name' => 'DUMMY',
+            'product_id' => $product->id,
+            'sub_sku' => $data['sku'] ?: null,
+            'default_purchase_price' => $data['purchase_price'],
+            'dpp_inc_tax' => $data['purchase_price'],
+            'default_sell_price' => $data['sell_price'] ?? $data['purchase_price'],
+            'sell_price_inc_tax' => $data['sell_price'] ?? $data['purchase_price'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'variation_id' => $variation->id,
+                'purchase_price' => (float) $variation->default_purchase_price,
+                'sell_price' => (float) $variation->default_sell_price,
+            ],
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

@@ -17,7 +17,7 @@ class StockController extends Controller
     public function adjustments(Request $request): View
     {
         $query = Transaction::where('business_id', auth()->user()->business_id)
-            ->where('type', 'stock_adjustment')
+            ->whereIn('type', ['stock_adjustment', 'opening_stock'])
             ->with(['location', 'items.product', 'items.variation'])
             ->withCount('items')
             ->latest('transaction_date');
@@ -86,7 +86,7 @@ class StockController extends Controller
     public function showAdjustment($id): View
     {
         $adjustment = Transaction::where('business_id', auth()->user()->business_id)
-            ->where('type', 'stock_adjustment')
+            ->whereIn('type', ['stock_adjustment', 'opening_stock'])
             ->with(['location', 'items.product', 'items.variation', 'creator'])
             ->findOrFail($id);
 
