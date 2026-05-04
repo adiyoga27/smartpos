@@ -27,4 +27,19 @@ class TaxRate extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function subTaxes()
+    {
+        return $this->belongsToMany(TaxRate::class, 'group_sub_taxes', 'group_tax_id', 'tax_id');
+    }
+
+    public function parentGroups()
+    {
+        return $this->belongsToMany(TaxRate::class, 'group_sub_taxes', 'tax_id', 'group_tax_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'tax_id');
+    }
 }

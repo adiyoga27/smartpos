@@ -11,12 +11,12 @@ class AccountTypeController extends Controller
 {
     public function index(): View
     {
-        $types = AccountType::where('business_id', auth()->user()->business_id)
+        $accountTypes = AccountType::where('business_id', auth()->user()->business_id)
             ->with('parent')
             ->orderBy('name')
-            ->get();
+            ->paginate(20);
 
-        return view('account_type.index', compact('types'));
+        return view('account_type.index', compact('accountTypes'));
     }
 
     public function store(Request $request): RedirectResponse

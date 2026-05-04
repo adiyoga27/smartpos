@@ -65,7 +65,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100" x-text="editingId ? 'Edit Account Type' : 'Add Account Type'"></h3>
                     <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form :action="editingId ? '{{ route('account-types.update', '') }}/' + editingId : '{{ route('account-types.store') }}'" method="POST">
+                <form :action="editingId ? '{{ route('account-types.update', '__ID__') }}'.replace('__ID__', editingId) : '{{ route('account-types.store') }}'" method="POST">
                     @csrf
                     <input type="hidden" name="_method" x-bind:value="editingId ? 'PUT' : 'POST'">
                     <div class="space-y-4">

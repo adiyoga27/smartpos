@@ -11,9 +11,9 @@ class CustomerGroupController extends Controller
 {
     public function index(): View
     {
-        $groups = CustomerGroup::where('business_id', auth()->user()->business_id)->get();
+        $customerGroups = CustomerGroup::where('business_id', auth()->user()->business_id)->paginate(20);
 
-        return view('customer_group.index', compact('groups'));
+        return view('customer_group.index', compact('customerGroups'));
     }
 
     public function store(Request $request): RedirectResponse

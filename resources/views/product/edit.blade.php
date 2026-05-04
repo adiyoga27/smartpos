@@ -17,7 +17,7 @@
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Perbarui data produk <strong>{{ $product->name }}</strong>.</p>
     </div>
 
-    <form method="POST" action="{{ route('products.update', $product->id) }}" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <form method="POST" action="{{ route('products.update', $product->id) }}" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         @csrf
         @method('PUT')
 
@@ -34,6 +34,28 @@
                 <label for="sku" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SKU <span class="text-danger-500">*</span></label>
                 <input type="text" name="sku" id="sku" value="{{ old('sku', $product->sku) }}" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none @error('sku') border-danger-500 @enderror">
                 @error('sku')<p class="mt-1 text-xs text-danger-500">{{ $message }}</p>@enderror
+            </div>
+
+            {{-- Barcode Number --}}
+            <div>
+                <label for="barcode" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nomor Barcode</label>
+                <input type="text" name="barcode" id="barcode" value="{{ old('barcode', $product->variations->first()?->sub_sku) }}" placeholder="Masukkan nomor barcode produk" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none @error('barcode') border-danger-500 @enderror">
+                @error('barcode')<p class="mt-1 text-xs text-danger-500">{{ $message }}</p>@enderror
+            </div>
+
+            {{-- Barcode Type --}}
+            <div>
+                <label for="barcode_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipe Barcode</label>
+                <select name="barcode_type" id="barcode_type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none @error('barcode_type') border-danger-500 @enderror">
+                    <option value="">-- Pilih Tipe --</option>
+                    <option value="C128" {{ old('barcode_type', $product->barcode_type) == 'C128' ? 'selected' : '' }}>Code 128</option>
+                    <option value="C39" {{ old('barcode_type', $product->barcode_type) == 'C39' ? 'selected' : '' }}>Code 39</option>
+                    <option value="EAN13" {{ old('barcode_type', $product->barcode_type) == 'EAN13' ? 'selected' : '' }}>EAN-13</option>
+                    <option value="EAN8" {{ old('barcode_type', $product->barcode_type) == 'EAN8' ? 'selected' : '' }}>EAN-8</option>
+                    <option value="UPCA" {{ old('barcode_type', $product->barcode_type) == 'UPCA' ? 'selected' : '' }}>UPC-A</option>
+                    <option value="UPCE" {{ old('barcode_type', $product->barcode_type) == 'UPCE' ? 'selected' : '' }}>UPC-E</option>
+                </select>
+                @error('barcode_type')<p class="mt-1 text-xs text-danger-500">{{ $message }}</p>@enderror
             </div>
 
             {{-- Type --}}
@@ -80,6 +102,18 @@
                     @endforeach
                 </select>
                 @error('category_id')<p class="mt-1 text-xs text-danger-500">{{ $message }}</p>@enderror
+            </div>
+
+            {{-- Image --}}
+            <div>
+                <label for="image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gambar Produk</label>
+                @if($product->image)
+                    <div class="mb-2">
+                        <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" class="w-16 h-16 rounded object-cover">
+                    </div>
+                @endif
+                <input type="file" name="image" id="image" accept="image/*" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-gray-700 dark:file:text-gray-200">
+                @error('image')<p class="mt-1 text-xs text-danger-500">{{ $message }}</p>@enderror
             </div>
 
             {{-- Tax --}}

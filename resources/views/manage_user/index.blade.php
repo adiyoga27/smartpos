@@ -39,7 +39,7 @@
                         <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">{{ $user->name }}</td>
                         <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ $user->username }}</td>
                         <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ $user->email }}</td>
-                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $user->role->name ?? '-' }}</td>
+                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $user->getRoleNames()->first() ?? '-' }}</td>
                         <td class="px-4 py-3 text-center">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ ($user->status ?? '') === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }}">
                                 {{ ucfirst($user->status ?? 'active') }}
@@ -75,7 +75,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100" x-text="editingId ? 'Edit User' : 'Add User'"></h3>
                     <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form :action="editingId ? '{{ route('users.update', '') }}/' + editingId : '{{ route('users.store') }}'" method="POST">
+                <form :action="editingId ? '{{ route('users.update', '__ID__') }}'.replace('__ID__', editingId) : '{{ route('users.store') }}'" method="POST">
                     @csrf
                     <input type="hidden" name="_method" x-bind:value="editingId ? 'PUT' : 'POST'">
                     <div class="space-y-4">
@@ -103,10 +103,10 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
-                                <select name="role_id" x-model="form.role_id" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                                <select name="role" x-model="form.role" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
                                     <option value="">Select Role</option>
                                     @foreach($roles ?? [] as $role)
-                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                        <option value="{{ $role->name }}">{{ $role->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -142,10 +142,10 @@ function userList() {
     return {
         showModal: false,
         editingId: null,
-        form: { name: '', username: '', email: '', password: '', role_id: '', phone: '', status: 'active' },
+        form: { name: '', username: '', email: '', password: '', role: '', phone: '', status: 'active' },
         openAddModal() {
             this.editingId = null;
-            this.form = { name: '', username: '', email: '', password: '', role_id: '', phone: '', status: 'active' };
+            this.form = { name: '', username: '', email: '', password: '', role: '', phone: '', status: 'active' };
             this.showModal = true;
         },
         editUser(user) {
@@ -154,7 +154,7 @@ function userList() {
             this.form.username = user.username;
             this.form.email = user.email;
             this.form.password = '';
-            this.form.role_id = user.role_id;
+            this.form.role = (user.roles && user.roles.length) ? user.roles[0].name : '';
             this.form.phone = user.phone ?? '';
             this.form.status = user.status ?? 'active';
             this.showModal = true;

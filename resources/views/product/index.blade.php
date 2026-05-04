@@ -43,6 +43,7 @@
             <table class="w-full text-sm text-left">
                 <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 text-xs uppercase tracking-wider">
                     <tr>
+                        <th class="px-4 py-3 font-semibold">Gambar</th>
                         <th class="px-4 py-3 font-semibold">SKU</th>
                         <th class="px-4 py-3 font-semibold">Nama</th>
                         <th class="px-4 py-3 font-semibold">Kategori</th>
@@ -63,6 +64,15 @@
                             $sellPrice = $defaultVariation ? $defaultVariation->default_sell_price : 0;
                         @endphp
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="px-4 py-3">
+                                @if($product->image)
+                                    <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" class="w-10 h-10 rounded object-cover">
+                                @else
+                                    <div class="w-10 h-10 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                        <i class="fa-solid fa-box text-gray-400 text-xs"></i>
+                                    </div>
+                                @endif
+                            </td>
                             <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">{{ $product->sku }}</td>
                             <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{{ $product->name }}</td>
                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $product->category?->name ?? '-' }}</td>
@@ -91,7 +101,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-12 text-center text-gray-400 dark:text-gray-500">
+                            <td colspan="9" class="px-4 py-12 text-center text-gray-400 dark:text-gray-500">
                                 <i class="fa-solid fa-box-open text-3xl mb-2 block"></i>
                                 Belum ada produk. Klik <a href="{{ route('products.create') }}" class="text-primary-500 hover:underline">Tambah Produk</a> untuk memulai.
                             </td>
@@ -114,7 +124,7 @@
             <p class="text-gray-600 dark:text-gray-300 mb-4">Apakah Anda yakin ingin menghapus produk <strong x-text="deleteName"></strong>?</p>
             <div class="flex justify-end gap-3">
                 <button x-on:click="showDeleteModal = false" class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Batal</button>
-                <form method="POST" x-bind:action="'{{ route('products.index') }}/' + deleteId">
+                <form method="POST" x-bind:action="'{{ route('products.destroy', '__ID__') }}'.replace('__ID__', deleteId)">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="px-4 py-2 bg-danger-500 hover:bg-danger-600 text-white text-sm font-medium rounded-lg transition-colors">Hapus</button>

@@ -15,10 +15,13 @@ class CategoryController extends Controller
         $categories = Category::where('business_id', auth()->user()->business_id)
             ->with('parent')
             ->orderBy('name')
-            ->get()
-            ->groupBy('parent_id');
+            ->paginate(20);
 
-        return view('category.index', compact('categories'));
+        $parentCategories = Category::where('business_id', auth()->user()->business_id)
+            ->orderBy('name')
+            ->get();
+
+        return view('category.index', compact('categories', 'parentCategories'));
     }
 
     public function store(Request $request): RedirectResponse

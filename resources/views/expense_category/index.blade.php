@@ -37,7 +37,7 @@
                         <td class="px-4 py-3 text-gray-600 dark:text-gray-400"><code class="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-xs">{{ $category->code }}</code></td>
                         <td class="px-4 py-3 text-right">
                             <button @click="editCategory({{ $category }})" class="text-primary-600 hover:text-primary-800 mr-3"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <form action="{{ route('expense_category.destroy', $category->id ?? 0) }}" method="POST" class="inline">
+                            <form action="{{ route('expense-categories.destroy', $category->id ?? 0) }}" method="POST" class="inline">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Delete this category?')"><i class="fa-solid fa-trash"></i></button>
                             </form>
@@ -65,7 +65,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100" x-text="editingId ? 'Edit Category' : 'Add Category'"></h3>
                     <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form :action="editingId ? '{{ route('expense_category.update', '') }}/' + editingId : '{{ route('expense_category.store') }}'" method="POST">
+                <form :action="editingId ? '{{ route('expense-categories.update', '__ID__') }}'.replace('__ID__', editingId) : '{{ route('expense-categories.store') }}'" method="POST">
                     @csrf
                     <input type="hidden" name="_method" x-bind:value="editingId ? 'PUT' : 'POST'">
                     <div class="space-y-4">

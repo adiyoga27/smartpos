@@ -113,7 +113,7 @@
             <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">Pelanggan dalam grup ini tidak akan dihapus.</p>
             <div class="flex justify-end gap-3">
                 <button x-on:click="showDeleteModal = false" class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Batal</button>
-                <form method="POST" x-bind:action="'{{ route('customer-groups.index') }}/' + deleteId">
+                <form method="POST" x-bind:action="'{{ route('customer-groups.destroy', '__ID__') }}'.replace('__ID__', deleteId)">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="px-4 py-2 bg-danger-500 hover:bg-danger-600 text-white text-sm font-medium rounded-lg transition-colors">Hapus</button>
@@ -153,7 +153,7 @@
             openEditModal(id, name, amount) {
                 this.modalTitle = 'Edit Grup Pelanggan';
                 this.submitLabel = 'Perbarui';
-                this.formAction = '{{ route('customer-groups.index') }}/' + id;
+                this.formAction = '{{ route('customer-groups.update', '__ID__') }}'.replace('__ID__', id);
                 this.formMethod = 'PUT';
                 this.formData = { name: name, amount: amount };
                 this.submitting = false;

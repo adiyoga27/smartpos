@@ -20,12 +20,12 @@ class CashRegisterController extends Controller
             ->first();
 
         $locations = BusinessLocation::where('business_id', auth()->user()->business_id)->get();
-        $history = CashRegister::where('business_id', auth()->user()->business_id)
+        $registers = CashRegister::where('business_id', auth()->user()->business_id)
+            ->with('user')
             ->latest()
-            ->take(10)
-            ->get();
+            ->paginate(20);
 
-        return view('cash_register.index', compact('register', 'locations', 'history'));
+        return view('cash_register.index', compact('register', 'locations', 'registers'));
     }
 
     public function open(Request $request): RedirectResponse

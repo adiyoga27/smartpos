@@ -11,7 +11,7 @@ class TaxRateController extends Controller
 {
     public function index(): View
     {
-        $taxRates = TaxRate::where('business_id', auth()->user()->business_id)->orderBy('name')->get();
+        $taxRates = TaxRate::where('business_id', auth()->user()->business_id)->orderBy('name')->paginate(20);
 
         return view('tax_rate.index', compact('taxRates'));
     }

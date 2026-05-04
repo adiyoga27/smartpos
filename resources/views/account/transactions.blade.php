@@ -89,7 +89,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100" x-text="editingId ? 'Edit Transaction' : 'Add Transaction'"></h3>
                     <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form :action="editingId ? '{{ route('accounts.transactions.update', '') }}/' + editingId : '{{ route('accounts.transactions.store') }}'" method="POST">
+                <form :action="editingId ? '{{ route('accounts.transactions.update', '__ID__') }}'.replace('__ID__', editingId) : '{{ route('accounts.transactions.store') }}'" method="POST">
                     @csrf
                     <input type="hidden" name="_method" x-bind:value="editingId ? 'PUT' : 'POST'">
                     <div class="space-y-4">

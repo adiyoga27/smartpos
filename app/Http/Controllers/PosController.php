@@ -22,7 +22,7 @@ class PosController extends Controller
     {
         $locations = BusinessLocation::where('business_id', auth()->user()->business_id)->get();
         $customers = Contact::where('business_id', auth()->user()->business_id)->customers()->orderBy('first_name')->get();
-        $taxRates = TaxRate::where('business_id', auth()->user()->business_id)->get();
+        $taxRates = TaxRate::where('business_id', auth()->user()->business_id)->with('subTaxes')->get();
 
         return view('sale_pos.create', compact('locations', 'customers', 'taxRates'));
     }
@@ -60,9 +60,15 @@ class PosController extends Controller
 
         $totalBeforeTax = $subTotal - $discountAmount;
         $taxAmount = 0;
+        $taxRate = null;
         if ($request->tax_id) {
-            $taxRate = TaxRate::find($request->tax_id);
-            $taxAmount = $totalBeforeTax * ($taxRate->amount / 100);
+            $taxRate = TaxRate::with('subTaxes')->find($request->tax_id);
+            if ($taxRate) {
+                $taxAmount += $totalBeforeTax * ($taxRate->amount / 100);
+                foreach ($taxRate->subTaxes as $subTax) {
+                    $taxAmount += $totalBeforeTax * ($subTax->amount / 100);
+                }
+            }
         }
 
         $finalTotal = $totalBeforeTax + $taxAmount;
@@ -92,7 +98,12 @@ class PosController extends Controller
                 $lineTotal = $item['quantity'] * $item['unit_price'];
                 $lineTax = 0;
                 if ($request->tax_id && $product->tax_type === 'exclusive') {
-                    $lineTax = $lineTotal * (TaxRate::find($request->tax_id)->amount / 100);
+                    $lineTax = $lineTotal * (($taxRate?->amount ?? 0) / 100);
+                    if ($taxRate && $taxRate->is_tax_group) {
+                        foreach ($taxRate->subTaxes as $subTax) {
+                            $lineTax += $lineTotal * ($subTax->amount / 100);
+                        }
+                    }
                 }
 
                 TransactionItem::create([

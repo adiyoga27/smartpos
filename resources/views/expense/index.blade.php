@@ -69,7 +69,7 @@
                         <td class="px-4 py-3 text-gray-500 dark:text-gray-400 max-w-[200px] truncate">{{ $expense->notes }}</td>
                         <td class="px-4 py-3 text-right">
                             <button @click="editExpense({{ $expense }})" class="text-primary-600 hover:text-primary-800 mr-3"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <form action="{{ route('expense.destroy', $expense->id ?? 0) }}" method="POST" class="inline">
+                            <form action="{{ route('expenses.destroy', $expense->id ?? 0) }}" method="POST" class="inline">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Delete this expense?')"><i class="fa-solid fa-trash"></i></button>
                             </form>
@@ -97,7 +97,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100" x-text="editingId ? 'Edit Expense' : 'Add Expense'"></h3>
                     <button @click="showAddModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form :action="editingId ? '{{ route('expense.update', '') }}/' + editingId : '{{ route('expense.store') }}'" method="POST">
+                <form :action="editingId ? '{{ route('expenses.update', '__ID__') }}'.replace('__ID__', editingId) : '{{ route('expenses.store') }}'" method="POST">
                     @csrf
                     <input type="hidden" name="_method" x-bind:value="editingId ? 'PUT' : 'POST'">
                     <div class="space-y-4">
@@ -156,11 +156,11 @@ function expenseList() {
         },
         applyFilter() {
             const params = new URLSearchParams(this.filters);
-            window.location.href = '{{ route('expense.index') }}?' + params.toString();
+            window.location.href = '{{ route('expenses.index') }}?' + params.toString();
         },
         resetFilter() {
             this.filters = { startDate: '', endDate: '', category: '' };
-            window.location.href = '{{ route('expense.index') }}';
+            window.location.href = '{{ route('expenses.index') }}';
         }
     }
 }

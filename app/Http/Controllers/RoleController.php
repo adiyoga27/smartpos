@@ -12,12 +12,19 @@ class RoleController extends Controller
 {
     public function index(): View
     {
-        $roles = Role::with('permissions')->get();
+        $roles = Role::with('permissions')->paginate(20);
         $permissions = Permission::all()->groupBy(function ($p) {
             return explode('.', $p->name)[0] ?? 'other';
         });
 
-        return view('role.index', compact('roles', 'permissions'));
+        $permissionModules = $permissions->map(function ($items, $module) {
+            return [
+                'name' => $module,
+                'permissions' => $items->pluck('name')->toArray(),
+            ];
+        })->values()->toArray();
+
+        return view('role.index', compact('roles', 'permissionModules'));
     }
 
     public function store(Request $request): RedirectResponse

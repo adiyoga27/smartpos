@@ -49,7 +49,7 @@ class SaleController extends Controller
             ->where('is_suspend', true)
             ->with(['contact'])
             ->latest()
-            ->get();
+            ->paginate(20);
 
         return view('sale.drafts', compact('drafts'));
     }

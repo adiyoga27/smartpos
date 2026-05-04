@@ -11,7 +11,7 @@ class ExpenseCategoryController extends Controller
 {
     public function index(): View
     {
-        $categories = ExpenseCategory::where('business_id', auth()->user()->business_id)->orderBy('name')->get();
+        $categories = ExpenseCategory::where('business_id', auth()->user()->business_id)->orderBy('name')->paginate(20);
 
         return view('expense_category.index', compact('categories'));
     }

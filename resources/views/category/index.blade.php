@@ -87,7 +87,7 @@
                     </button>
                 </div>
 
-                <form x-bind:action="editMode ? '{{ route('categories.index') }}/' + form.id : '{{ route('categories.store') }}'" method="POST" class="space-y-4">
+                <form x-bind:action="editMode ? '{{ route('categories.update', '__ID__') }}'.replace('__ID__', form.id) : '{{ route('categories.store') }}'" method="POST" class="space-y-4">
                     @csrf
                     <template x-if="editMode">
                         <input type="hidden" name="_method" value="PUT">

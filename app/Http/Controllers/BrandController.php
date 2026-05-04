@@ -11,7 +11,7 @@ class BrandController extends Controller
 {
     public function index(): View
     {
-        $brands = Brand::where('business_id', auth()->user()->business_id)->orderBy('name')->get();
+        $brands = Brand::where('business_id', auth()->user()->business_id)->orderBy('name')->paginate(20);
 
         return view('brand.index', compact('brands'));
     }

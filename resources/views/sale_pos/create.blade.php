@@ -20,7 +20,7 @@
             <div class="mb-4">
                 <div class="relative">
                     <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" x-model="searchQuery" x-on:input.debounce.300ms="searchProducts()" placeholder="Cari produk berdasarkan nama, SKU, atau barcode..." class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm">
+                    <input type="text" x-model="searchQuery" x-on:input.debounce.300ms="searchProducts()" x-on:keydown.enter.prevent="handleBarcodeScan()" placeholder="Cari produk berdasarkan nama, SKU, atau barcode..." class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm" autofocus>
                 </div>
             </div>
 
@@ -35,16 +35,21 @@
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     <template x-for="product in searchResults" :key="product.id">
-                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 p-3 hover:border-primary-400 dark:hover:border-primary-500 transition-colors">
-                            <div class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate" x-text="product.name"></div>
-                            <div class="flex items-center gap-1 mt-1">
-                                <span class="text-xs text-gray-500 dark:text-gray-400" x-text="product.sku"></span>
+                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 p-3 hover:border-primary-400 dark:hover:border-primary-500 transition-colors cursor-pointer" x-on:click="addToCart(product)">
+                            <div class="flex items-center gap-2 mb-2">
+                                <img :src="product.image || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%23e5e7eb%22 width=%2240%22 height=%2240%22/><text x=%2250%25%22 y=%2255%25%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%2212%22>No Img</text></svg>'" class="w-12 h-12 rounded object-cover flex-shrink-0 bg-gray-100 dark:bg-gray-600">
+                                <div class="min-w-0">
+                                    <div class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate" x-text="product.name"></div>
+                                    <div class="flex items-center gap-1 mt-0.5">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400" x-text="product.barcode || product.sku"></span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="flex items-center justify-between mt-2">
-                                <span class="text-sm font-bold text-primary-600 dark:text-primary-400" x-text="'Rp ' + formatNumber(product.sell_price || product.default_sell_price || 0)"></span>
-                                <button x-on:click="addToCart(product)" class="px-3 py-1 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-bold text-primary-600 dark:text-primary-400" x-text="'Rp ' + formatNumber(product.sell_price_inc_tax || product.sell_price || 0)"></span>
+                                <span class="px-2 py-1 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors">
                                     <i class="fa-solid fa-plus mr-1"></i> Tambah
-                                </button>
+                                </span>
                             </div>
                         </div>
                     </template>
@@ -164,10 +169,12 @@
             </div>
 
             <template x-for="(item, idx) in cartItems" :key="idx">
-                <input type="hidden" :name="'items[' + idx + '][product_id]'" :value="item.product_id">
-                <input type="hidden" :name="'items[' + idx + '][variation_id]'" :value="item.variation_id">
-                <input type="hidden" :name="'items[' + idx + '][quantity]'" :value="item.qty">
-                <input type="hidden" :name="'items[' + idx + '][unit_price]'" :value="item.price">
+                <div>
+                    <input type="hidden" :name="'items[' + idx + '][product_id]'" :value="item.product_id">
+                    <input type="hidden" :name="'items[' + idx + '][variation_id]'" :value="item.variation_id">
+                    <input type="hidden" :name="'items[' + idx + '][quantity]'" :value="item.qty">
+                    <input type="hidden" :name="'items[' + idx + '][unit_price]'" :value="item.price">
+                </div>
             </template>
             <input type="hidden" name="discount_type" :value="discountType">
             <input type="hidden" name="discount_amount" :value="discountAmount || 0">
@@ -182,7 +189,7 @@
 
 @push('scripts')
 <script>
-    const taxRates = @json($taxRates->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'amount' => $t->amount]));
+    const taxRates = @json($taxRates->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'amount' => $t->amount, 'is_tax_group' => $t->is_tax_group, 'sub_taxes' => $t->subTaxes->map(fn($s) => ['id' => $s->id, 'name' => $s->name, 'amount' => $s->amount])]));
 
     function posCart() {
         return {
@@ -220,7 +227,12 @@
                 if (!this.selectedTaxId) return 0;
                 const tax = taxRates.find(t => t.id == this.selectedTaxId);
                 if (!tax) return 0;
-                return (this.subtotal - this.discountValue) * (tax.amount / 100);
+                const base = this.subtotal - this.discountValue;
+                let totalTax = base * (tax.amount / 100);
+                if (tax.is_tax_group && tax.sub_taxes) {
+                    totalTax += tax.sub_taxes.reduce((sum, st) => sum + base * (st.amount / 100), 0);
+                }
+                return totalTax;
             },
 
             get grandTotal() {
@@ -242,18 +254,35 @@
                 }
             },
 
+            handleBarcodeScan() {
+                if (this.searchResults.length === 1) {
+                    this.addToCart(this.searchResults[0]);
+                    this.searchQuery = '';
+                    this.searchResults = [];
+                } else if (this.searchResults.length > 1) {
+                    this.addToCart(this.searchResults[0]);
+                    this.searchQuery = '';
+                }
+            },
+
             addToCart(product) {
-                const existing = this.cart.find(item => item.variation_id == (product.default_variation?.id || product.id));
+                const variationId = product.variation_id || product.default_variation?.id || product.variations?.[0]?.id || product.id;
+                const existing = this.cart.find(item => item.variation_id == variationId);
                 if (existing) {
                     existing.qty += 1;
                 } else {
                     this.cart.push({
                         product_id: product.id,
-                        variation_id: product.default_variation?.id || product.variations?.[0]?.id || product.id,
+                        variation_id: variationId,
                         name: product.name,
-                        price: parseFloat(product.sell_price || product.default_sell_price || product.default_variation?.default_sell_price || 0),
+                        image: product.image,
+                        price: parseFloat(product.sell_price_inc_tax || product.sell_price || product.default_sell_price || product.default_variation?.default_sell_price || 0),
+                        tax_id: product.tax_id,
                         qty: 1,
                     });
+                }
+                if (product.tax_id && !this.selectedTaxId) {
+                    this.selectedTaxId = product.tax_id;
                 }
             },
 

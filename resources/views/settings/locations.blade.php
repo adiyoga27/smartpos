@@ -63,7 +63,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100" x-text="editingId ? 'Edit Location' : 'Add Location'"></h3>
                     <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form :action="editingId ? '{{ route('settings.locations.update', '') }}/' + editingId : '{{ route('settings.locations.store') }}'" method="POST">
+                <form :action="editingId ? '{{ route('settings.locations.update', '__ID__') }}'.replace('__ID__', editingId) : '{{ route('settings.locations.store') }}'" method="POST">
                     @csrf
                     <input type="hidden" name="_method" x-bind:value="editingId ? 'PUT' : 'POST'">
                     <div class="space-y-4">

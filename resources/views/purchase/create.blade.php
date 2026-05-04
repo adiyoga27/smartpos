@@ -16,7 +16,22 @@
 
 @section('content')
 <div x-data="purchaseForm()" x-cloak>
-    <form method="POST" action="{{ route('purchases.store') }}" class="max-w-4xl mx-auto space-y-4">
+    {{-- Validation Errors --}}
+    @if ($errors->any())
+        <div class="max-w-4xl mx-auto mb-4 p-4 bg-danger-50 border border-red-200 rounded-lg">
+            <div class="flex items-center gap-2 text-red-700 font-medium text-sm mb-2">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>Terjadi kesalahan. Silakan periksa kembali:</span>
+            </div>
+            <ul class="list-disc list-inside text-sm text-red-600 space-y-0.5">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('purchases.store') }}" x-on:submit="validateForm($event)" class="max-w-4xl mx-auto space-y-4">
         @csrf
 
         {{-- Header Info --}}
@@ -25,36 +40,41 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Supplier <span class="text-red-500">*</span></label>
-                    <select name="contact_id" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <select name="contact_id" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 @error('contact_id') border-danger-500 @enderror">
                         <option value="">-- Pilih Supplier --</option>
                         @foreach($suppliers as $supplier)
-                            <option value="{{ $supplier->id }}">{{ $supplier->supplier_business_name ?: $supplier->full_name }}</option>
+                            <option value="{{ $supplier->id }}" {{ old('contact_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->supplier_business_name ?: $supplier->full_name }}</option>
                         @endforeach
                     </select>
+                    @error('contact_id')<p class="mt-1 text-xs text-danger-500">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Lokasi <span class="text-red-500">*</span></label>
-                    <select name="location_id" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <select name="location_id" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 @error('location_id') border-danger-500 @enderror">
                         <option value="">-- Pilih Lokasi --</option>
                         @foreach($locations as $location)
-                            <option value="{{ $location->id }}">{{ $location->name }}</option>
+                            <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>{{ $location->name }}</option>
                         @endforeach
                     </select>
+                    @error('location_id')<p class="mt-1 text-xs text-danger-500">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">No. Referensi</label>
-                    <input type="text" name="ref_no" placeholder="No. referensi / invoice supplier" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <input type="text" name="ref_no" value="{{ old('ref_no') }}" placeholder="No. referensi / invoice supplier" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 @error('ref_no') border-danger-500 @enderror">
+                    @error('ref_no')<p class="mt-1 text-xs text-danger-500">{{ $message }}</p>@enderror
                 </div>
             </div>
         </div>
 
         {{-- Item Search & Add --}}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 @error('items') border-danger-500 @enderror">
             <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">Item Pembelian</h3>
+            @error('items')<p class="text-xs text-danger-500 mb-2">{{ $message }}</p>@enderror
+            @error('items.0')<p class="text-xs text-danger-500 mb-2">Item pembelian tidak valid. Pastikan semua item memiliki produk, jumlah, dan harga yang benar.</p>@enderror
             <div class="flex gap-2 mb-4">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" x-model="productSearch" x-on:input.debounce.300ms="searchProducts()" placeholder="Cari produk..." class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <input type="text" x-model="productSearch" x-on:keyup.debounce.300ms="searchProducts()" x-on:keydown.enter.prevent="handleScanOrSearch()" placeholder="Ketik minimal 2 huruf untuk mencari produk..." class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
             </div>
 
@@ -63,7 +83,7 @@
                 <template x-for="product in productResults" :key="product.id">
                     <div x-on:click="addItem(product)" class="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 border-b border-gray-100 dark:border-gray-700 last:border-0">
                         <p class="text-sm text-gray-800 dark:text-gray-200 font-medium" x-text="product.name"></p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'SKU: ' + (product.sku || '-') + ' | Harga Beli: Rp ' + formatNumber(product.default_purchase_price || 0)"></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'SKU: ' + (product.sku || '-') + ' | Harga Beli: Rp ' + formatNumber(product.purchase_price || 0)"></p>
                     </div>
                 </template>
             </div>
@@ -115,10 +135,12 @@
 
             {{-- Hidden item inputs --}}
             <template x-for="(item, idx) in items" :key="idx">
-                <input type="hidden" :name="'items[' + idx + '][product_id]'" :value="item.product_id">
-                <input type="hidden" :name="'items[' + idx + '][variation_id]'" :value="item.variation_id">
-                <input type="hidden" :name="'items[' + idx + '][quantity]'" :value="item.qty">
-                <input type="hidden" :name="'items[' + idx + '][purchase_price]'" :value="item.purchase_price">
+                <div>
+                    <input type="hidden" :name="'items[' + idx + '][product_id]'" :value="item.product_id">
+                    <input type="hidden" :name="'items[' + idx + '][variation_id]'" :value="item.variation_id">
+                    <input type="hidden" :name="'items[' + idx + '][quantity]'" :value="item.qty">
+                    <input type="hidden" :name="'items[' + idx + '][purchase_price]'" :value="item.purchase_price">
+                </div>
             </template>
         </div>
 
@@ -243,20 +265,47 @@
             },
 
             addItem(product) {
-                const existing = this.items.find(item => item.variation_id == (product.default_variation?.id || product.id));
+                if (!product.variation_id) {
+                    alert('Produk ini tidak memiliki data variasi yang valid.');
+                    return;
+                }
+                const existing = this.items.find(item => item.variation_id == product.variation_id);
                 if (existing) {
                     existing.qty += 1;
                 } else {
                     this.items.push({
                         product_id: product.id,
-                        variation_id: product.default_variation?.id || product.variations?.[0]?.id || product.id,
+                        variation_id: product.variation_id,
                         name: product.name,
-                        purchase_price: parseFloat(product.default_purchase_price || 0),
+                        purchase_price: parseFloat(product.purchase_price || 0),
                         qty: 1,
                     });
                 }
                 this.productSearch = '';
                 this.productResults = [];
+            },
+
+            handleScanOrSearch() {
+                if (this.productResults.length === 1) {
+                    this.addItem(this.productResults[0]);
+                } else if (this.productResults.length > 1) {
+                    this.addItem(this.productResults[0]);
+                }
+            },
+
+            validateForm(event) {
+                if (this.items.length === 0) {
+                    event.preventDefault();
+                    alert('Tambahkan minimal satu item pembelian.');
+                    return;
+                }
+                for (const item of this.items) {
+                    if (!item.product_id || !item.variation_id || !item.qty || !item.purchase_price) {
+                        event.preventDefault();
+                        alert('Beberapa item tidak lengkap. Silakan periksa kembali.');
+                        return;
+                    }
+                }
             },
 
             removeItem(index) {

@@ -1,59 +1,73 @@
 @php
-    $menu = [
-        ['label' => 'Dashboard', 'icon' => 'fa-home', 'route' => 'dashboard', 'active' => 'dashboard*'],
+    $menuItems = [
+        ['label' => 'Dashboard', 'icon' => 'fa-home', 'route' => 'dashboard', 'active' => 'dashboard*', 'permission' => 'dashboard.view'],
         ['label' => 'Master Data', 'icon' => 'fa-database', 'route' => null, 'active' => 'categories*|brands*|units*|tax-rates*', 'children' => [
-            ['label' => 'Kategori', 'route' => 'categories.index'],
-            ['label' => 'Merek', 'route' => 'brands.index'],
-            ['label' => 'Satuan', 'route' => 'units.index'],
-            ['label' => 'Pajak', 'route' => 'tax-rates.index'],
+            ['label' => 'Kategori', 'route' => 'categories.index', 'permission' => 'categories.view'],
+            ['label' => 'Merek', 'route' => 'brands.index', 'permission' => 'brands.view'],
+            ['label' => 'Satuan', 'route' => 'units.index', 'permission' => 'units.view'],
+            ['label' => 'Pajak', 'route' => 'tax-rates.index', 'permission' => 'tax-rates.view'],
         ]],
-        ['label' => 'Produk', 'icon' => 'fa-box', 'route' => 'products.index', 'active' => 'products*'],
+        ['label' => 'Produk', 'icon' => 'fa-box', 'route' => 'products.index', 'active' => 'products*', 'permission' => 'products.view'],
         ['label' => 'Kontak', 'icon' => 'fa-users', 'route' => null, 'active' => 'contacts*|customer-groups*', 'children' => [
-            ['label' => 'Pelanggan & Supplier', 'route' => 'contacts.index'],
-            ['label' => 'Grup Pelanggan', 'route' => 'customer-groups.index'],
+            ['label' => 'Pelanggan & Supplier', 'route' => 'contacts.index', 'permission' => 'contacts.view'],
+            ['label' => 'Grup Pelanggan', 'route' => 'customer-groups.index', 'permission' => 'customer-groups.view'],
         ]],
         ['label' => 'POS / Penjualan', 'icon' => 'fa-cash-register', 'route' => null, 'active' => 'pos*|sales*', 'children' => [
-            ['label' => 'Kasir POS', 'route' => 'pos.index'],
-            ['label' => 'Daftar Penjualan', 'route' => 'sales.index'],
-            ['label' => 'Draft / Tunda', 'route' => 'sales.drafts'],
+            ['label' => 'Kasir POS', 'route' => 'pos.index', 'permission' => 'pos.view'],
+            ['label' => 'Daftar Penjualan', 'route' => 'sales.index', 'permission' => 'sales.view'],
+            ['label' => 'Draft / Tunda', 'route' => 'sales.drafts', 'permission' => 'sales.view'],
         ]],
         ['label' => 'Pembelian', 'icon' => 'fa-truck', 'route' => null, 'active' => 'purchases*', 'children' => [
-            ['label' => 'Pembelian Baru', 'route' => 'purchases.create'],
-            ['label' => 'Daftar Pembelian', 'route' => 'purchases.index'],
+            ['label' => 'Pembelian Baru', 'route' => 'purchases.create', 'permission' => 'purchases.create'],
+            ['label' => 'Daftar Pembelian', 'route' => 'purchases.index', 'permission' => 'purchases.view'],
         ]],
         ['label' => 'Stok', 'icon' => 'fa-boxes-stacked', 'route' => null, 'active' => 'stock*', 'children' => [
-            ['label' => 'Stok Adjustment', 'route' => 'stock.adjustments'],
-            ['label' => 'Transfer Stok', 'route' => 'stock.transfers'],
+            ['label' => 'Stok Adjustment', 'route' => 'stock.adjustments.index', 'permission' => 'stock.view'],
+            ['label' => 'Transfer Stok', 'route' => 'stock.transfers.index', 'permission' => 'stock.view'],
         ]],
         ['label' => 'Biaya', 'icon' => 'fa-money-bill', 'route' => null, 'active' => 'expenses*|expense-categories*', 'children' => [
-            ['label' => 'Biaya Baru', 'route' => 'expenses.index'],
-            ['label' => 'Daftar Biaya', 'route' => 'expenses.index'],
-            ['label' => 'Kategori Biaya', 'route' => 'expense-categories.index'],
+            ['label' => 'Daftar Biaya', 'route' => 'expenses.index', 'permission' => 'expenses.view'],
+            ['label' => 'Kategori Biaya', 'route' => 'expense-categories.index', 'permission' => 'expense-categories.view'],
         ]],
         ['label' => 'Laporan', 'icon' => 'fa-chart-bar', 'route' => null, 'active' => 'reports*', 'children' => [
-            ['label' => 'Laporan Penjualan', 'route' => 'reports.sales'],
-            ['label' => 'Laporan Pembelian', 'route' => 'reports.purchases'],
-            ['label' => 'Laporan Stok', 'route' => 'reports.stock'],
-            ['label' => 'Laba Rugi', 'route' => 'reports.profit-loss'],
-            ['label' => 'Laporan Pajak', 'route' => 'reports.tax'],
+            ['label' => 'Laporan Penjualan', 'route' => 'reports.sales', 'permission' => 'reports.view'],
+            ['label' => 'Laporan Pembelian', 'route' => 'reports.purchases', 'permission' => 'reports.view'],
+            ['label' => 'Laporan Stok', 'route' => 'reports.stock', 'permission' => 'reports.view'],
+            ['label' => 'Laba Rugi', 'route' => 'reports.profit-loss', 'permission' => 'reports.view'],
+            ['label' => 'Laporan Pajak', 'route' => 'reports.tax', 'permission' => 'reports.view'],
         ]],
-        ['label' => 'Kas Register', 'icon' => 'fa-money-bill-wave', 'route' => 'cash-register.index', 'active' => 'cash-register*'],
+        ['label' => 'Kas Register', 'icon' => 'fa-money-bill-wave', 'route' => 'cash-register.index', 'active' => 'cash-register*', 'permission' => 'cash-register.view'],
         ['label' => 'Akuntansi', 'icon' => 'fa-calculator', 'route' => null, 'active' => 'accounts*|account-types*', 'children' => [
-            ['label' => 'Akun', 'route' => 'accounts.index'],
-            ['label' => 'Tipe Akun', 'route' => 'account-types.index'],
-            ['label' => 'Transaksi Akun', 'route' => 'accounts.transactions'],
+            ['label' => 'Akun', 'route' => 'accounts.index', 'permission' => 'accounts.view'],
+            ['label' => 'Tipe Akun', 'route' => 'account-types.index', 'permission' => 'account-types.view'],
+            ['label' => 'Transaksi Akun', 'route' => 'accounts.transactions.index', 'permission' => 'accounts.view'],
         ]],
         ['label' => 'Pengguna', 'icon' => 'fa-user-gear', 'route' => null, 'active' => 'users*|roles*', 'children' => [
-            ['label' => 'Pengguna', 'route' => 'users.index'],
-            ['label' => 'Role & Izin', 'route' => 'roles.index'],
+            ['label' => 'Pengguna', 'route' => 'users.index', 'permission' => 'users.view'],
+            ['label' => 'Role & Izin', 'route' => 'roles.index', 'permission' => 'roles.view'],
         ]],
         ['label' => 'Pengaturan', 'icon' => 'fa-gear', 'route' => null, 'active' => 'settings*', 'children' => [
-            ['label' => 'Bisnis', 'route' => 'settings.business'],
-            ['label' => 'Lokasi', 'route' => 'settings.locations'],
-            ['label' => 'Invoice Layout', 'route' => 'settings.invoice-layouts'],
-            ['label' => 'Sistem', 'route' => 'settings.system'],
+            ['label' => 'Bisnis', 'route' => 'settings.business', 'permission' => 'settings.view'],
+            ['label' => 'Lokasi', 'route' => 'settings.locations', 'permission' => 'settings.view'],
+            ['label' => 'Invoice Layout', 'route' => 'settings.invoice-layouts', 'permission' => 'settings.view'],
+            ['label' => 'Sistem', 'route' => 'settings.system', 'permission' => 'settings.view'],
         ]],
     ];
+
+    $menu = [];
+    foreach ($menuItems as $item) {
+        if (!empty($item['children'])) {
+            $visibleChildren = array_filter($item['children'], function ($child) {
+                return auth()->user()->can($child['permission']);
+            });
+            if (!empty($visibleChildren)) {
+                $item['children'] = array_values($visibleChildren);
+                $menu[] = $item;
+            }
+        } elseif (auth()->user()->can($item['permission'])) {
+            $menu[] = $item;
+        }
+    }
 
     function isMenuActive($activePattern) {
         if (!$activePattern) return false;

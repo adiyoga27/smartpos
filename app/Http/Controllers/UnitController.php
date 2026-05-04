@@ -11,7 +11,7 @@ class UnitController extends Controller
 {
     public function index(): View
     {
-        $units = Unit::where('business_id', auth()->user()->business_id)->orderBy('actual_name')->get();
+        $units = Unit::where('business_id', auth()->user()->business_id)->orderBy('actual_name')->paginate(20);
 
         return view('unit.index', compact('units'));
     }

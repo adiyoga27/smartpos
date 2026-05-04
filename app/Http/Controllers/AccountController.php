@@ -15,7 +15,7 @@ class AccountController extends Controller
         $accounts = Account::where('business_id', auth()->user()->business_id)
             ->with('accountType')
             ->orderBy('name')
-            ->get();
+            ->paginate(20);
 
         return view('account.index', compact('accounts'));
     }
@@ -83,5 +83,24 @@ class AccountController extends Controller
         ]);
 
         return back()->with('success', 'Transaksi akun berhasil dicatat.');
+    }
+
+    public function updateTransaction(Request $request, AccountTransaction $transaction): RedirectResponse
+    {
+        $transaction->update($request->validate([
+            'account_id' => 'required|exists:accounts,id',
+            'type' => 'required|in:debit,credit',
+            'amount' => 'required|numeric|min:0',
+            'note' => 'nullable|string',
+        ]));
+
+        return back()->with('success', 'Transaksi akun berhasil diperbarui.');
+    }
+
+    public function destroyTransaction(AccountTransaction $transaction): RedirectResponse
+    {
+        $transaction->delete();
+
+        return back()->with('success', 'Transaksi akun berhasil dihapus.');
     }
 }

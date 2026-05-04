@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Business;
 use App\Models\BusinessLocation;
+use App\Models\Contact;
 use App\Models\InvoiceLayout;
 use App\Models\InvoiceScheme;
 use App\Models\User;
@@ -71,5 +72,23 @@ class BusinessSeeder extends Seeder
             'show_customer' => true,
             'design' => 'classic',
         ]);
+
+        Contact::firstOrCreate(
+            ['business_id' => $business->id, 'type' => 'supplier', 'first_name' => 'Supplier'],
+            [
+                'supplier_business_name' => 'PT Supplier Utama',
+                'mobile' => '08123456789',
+                'created_by' => $user->id,
+            ]
+        );
+
+        Contact::firstOrCreate(
+            ['business_id' => $business->id, 'type' => 'customer', 'first_name' => 'Walk-in'],
+            [
+                'last_name' => 'Customer',
+                'is_default' => true,
+                'created_by' => $user->id,
+            ]
+        );
     }
 }

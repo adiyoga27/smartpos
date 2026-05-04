@@ -108,15 +108,27 @@ class ReportController extends Controller
         $fromDate = $request->from_date ?? now()->startOfMonth()->format('Y-m-d');
         $toDate = $request->to_date ?? now()->format('Y-m-d');
 
-        $taxReport = Transaction::where('business_id', auth()->user()->business_id)
+        $taxData = Transaction::where('business_id', auth()->user()->business_id)
             ->whereIn('type', ['sell', 'purchase'])
             ->whereBetween('transaction_date', [$fromDate, $toDate.' 23:59:59'])
-            ->with('tax')
             ->whereNotNull('tax_id')
-            ->selectRaw('tax_id, SUM(tax_amount) as total_tax, COUNT(*) as transaction_count')
+            ->with('tax')
+            ->get()
             ->groupBy('tax_id')
-            ->get();
+            ->map(function ($transactions) {
+                $tax = $transactions->first()->tax;
 
-        return view('report.tax', compact('taxReport', 'fromDate', 'toDate'));
+                return [
+                    'name' => $tax?->name ?? 'Unknown',
+                    'transaction_count' => $transactions->count(),
+                    'total_tax_amount' => $transactions->sum('tax_amount'),
+                ];
+            })
+            ->values();
+
+        $totalTransactionCount = $taxData->sum('transaction_count');
+        $totalTaxAmount = $taxData->sum('total_tax_amount');
+
+        return view('report.tax', compact('taxData', 'totalTransactionCount', 'totalTaxAmount', 'fromDate', 'toDate'));
     }
 }
